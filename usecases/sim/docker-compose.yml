@@ -1,0 +1,58 @@
+version: '2'
+
+services:
+        odsupercomponent:
+                build: .
+                network_mode: "host"
+                volumes:
+                        - ${conf}:/opt/configuration
+                environment:
+                        - FREQ=10
+                command: "/opt/od4/bin/odsupercomponent --cid=111 --verbose=1 --freq=10"
+                working_dir: "/opt/configuration"
+        odsimvehicle:
+                build: .
+                network_mode: "host"
+                volumes:
+                        - ${conf}:/opt/configuration
+                environment:
+                        - FREQ=10
+                command: "/opt/od4/bin/odsimvehicle --freq=$FREQ --cid=111 --verbose=1"
+                depends_on: ['odsupercomponent']
+                working_dir: "/opt/configuration"
+        odsimirus:
+                build: .
+                network_mode: "host"
+                volumes:
+                        - ${conf}:/opt/configuration
+                environment:
+                        - FREQ=10
+                command: "/opt/od4/bin/odsimirus --cid=111 --verbose=1 --freq=$FREQ"
+                depends_on: ['odsupercomponent']
+                working_dir: "/opt/configuration"
+
+        odsimcamera:
+                build: .
+                network_mode: "host"
+                volumes:
+                        - ${conf}:/opt/configuration
+                        - /tmp/.X11-unix:/tmp/.X11-unix:ro
+                environment:
+                        - DISPLAY=${DISPLAY}
+                        - FREQ=10
+                command: "/opt/od4/bin/odsimcamera --cid=111 --verbose=1 --ipc=host -e DISPLAY=$DISPLAY --freq=$FREQ"
+                depends_on: ['odsupercomponent']
+                working_dir: "/opt/configuration"
+
+        odcockpit:
+                build: .
+                network_mode: "host"
+                volumes:
+                        - ${conf}:/opt/configuration  
+                        - /tmp/.X11-unix:/tmp/.X11-unix:ro 
+                environment:
+                        - DISPLAY=${DISPLAY}
+                        - FREQ=10
+                command: "/opt/od4/bin/odcockpit --cid=111 --verbose=1 --ipc=host -e DISPLAY=$DISPLAY --freq=$FREQ"
+                depends_on: ['odsupercomponent']
+                working_dir: "/opt/configuration"

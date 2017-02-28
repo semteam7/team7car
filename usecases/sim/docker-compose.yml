@@ -15,7 +15,7 @@ services:
                         - ${conf}:/opt/configuration
                 environment:
                         - FREQ=10
-                command: /opt/od4/bin/odsimvehicle --freq=$FREQ --cid=111 --verbose=1
+                command: /opt/od4/bin/odsimvehicle --freq=$FREQ --cid=111 --verbose=0
                 depends_on: ['odsupercomponent']
                 working_dir: "/opt/configuration"
         odsimirus:
@@ -23,21 +23,9 @@ services:
                 network_mode: "host"
                 volumes:
                         - ${conf}:/opt/configuration
-                command: /opt/od4/bin/odsimirus --freq=$FREQ --cid=111 --verbose=1
+                command: /opt/od4/bin/odsimirus --freq=$FREQ --cid=111 --verbose=0
                 depends_on: ['odsupercomponent']
                 working_dir: /opt/configuration
-
-        odsimcamera:
-                build: .
-                network_mode: "host"
-                volumes:
-                        - ${conf}:/opt/configuration
-                        - /tmp/.X11-unix:/tmp/.X11-unix:ro
-                environment:
-                        - DISPLAY=${DISPLAY}
-                command: /opt/od4/bin/odsimcamera --freq=$FREQ --cid=111 --verbose=1 --ipc=host -e DISPLAY=$$DISPLAY
-                depends_on: ['odsupercomponent']
-                working_dir: "/opt/configuration"
 
         odcockpit:
                 build: .
@@ -47,6 +35,6 @@ services:
                         - /tmp/.X11-unix:/tmp/.X11-unix:ro 
                 environment:
                         - DISPLAY=${DISPLAY}
-                command: /opt/od4/bin/odcockpit --freq=$FREQ --cid=111 --verbose=1 --ipc=host -e DISPLAY=$$DISPLAY
+                command: /opt/od4/bin/odcockpit --freq=$FREQ --cid=111 --verbose=0 --ipc=host -e DISPLAY=$$DISPLAY
                 depends_on: ['odsupercomponent']
                 working_dir: "/opt/configuration"

@@ -1,0 +1,18 @@
+version: '2'
+
+services:
+        odscaledcarsperceptionexample:
+                build: .
+                network_mode: "host"
+                volumes:
+                        - ${conf}:/opt/configuration
+                        - /tmp/.X11-unix:/tmp/.X11-unix:ro 
+                environment:
+                        - DISPLAY=${DISPLAY}
+                devices:
+                        - "/dev/video0:/dev/video0"
+                user: odv
+                network_mode: host
+                ipc: host
+                command: /opt/opendlv.scaledcars/bin/scaledcars-perception-example -e DISPLAY=$$DISPLAY --freq=$FREQ --cid=111 --verbose=1
+                working_dir: /opt/configuration

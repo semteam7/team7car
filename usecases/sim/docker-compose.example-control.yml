@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+        odscaledcarscontrolexample:
+                build: .
+                network_mode: "host"
+                volumes:
+                        - ${conf}:/opt/configuration
+                command: /opt/opendlv.scaledcars/bin/scaledcars-control-example --freq=$FREQ --cid=111 --verbose=1
+                working_dir: /opt/configuration

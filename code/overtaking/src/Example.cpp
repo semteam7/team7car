@@ -56,12 +56,12 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Example::body() {
     cout << em.toString() << endl;
 
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-        cout << " CHANGEDDDD Inside the main processing loop." << endl;
+        cout << " NEWW Inside the main processing loop." << endl;
 
         // Example how to send commands to the vehicle.
         automotive::VehicleControl vc;
-        vc.setSpeed(20);
-        vc.setSteeringWheelAngle(50 * cartesian::Constants::DEG2RAD);
+        vc.setSpeed(-2);
+        vc.setSteeringWheelAngle(9 * cartesian::Constants::DEG2RAD);
         Container c(vc);
         getConference().send(c);
     }

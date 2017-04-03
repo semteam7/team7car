@@ -1,8 +1,5 @@
 version: "2"
-<<<<<<< HEAD
-=======
 
->>>>>>> master
 services:
         proxy-camera:
                 build: .
@@ -11,7 +8,7 @@ services:
                 depends_on:
                         - odsupercomponent
                 devices:
-<<<<<<< HEAD
+
                         - "/dev/video1:/dev/video0"
                 volumes:
                         - ${conf}:/opt/configuration
@@ -22,11 +19,11 @@ services:
                 network_mode: host
                 ipc: host
                 command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111 --freq=20 --ipc=host -e DISPLAY=$$DISPLAY"
-=======
+
                         - "/dev/video0:/dev/video0"
                 user: odv
                 network_mode: host
                 ipc: host
                 command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111 --freq=20"
 
->>>>>>> master
+

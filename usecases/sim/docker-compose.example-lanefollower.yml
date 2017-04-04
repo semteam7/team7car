@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+        lanefollower:
+                build: .
+                network_mode: "host"
+                volumes:
+                        - ${conf}:/opt/configuration
+                ipc: host
+                command: /opt/opendlv.scaledcars/bin/lanefollower --freq=$FREQ --cid=111 --verbose=1
+                working_dir: /opt/configuration

@@ -47,7 +47,7 @@ namespace automotive {
             m_hasAttachedToSharedImageMemory(false),
             m_sharedImageMemory(),
             m_image(NULL),
-            m_debug(true),
+            m_debug(false),
             m_font(),
             m_previousTime(),
             m_eSum(0),
@@ -257,12 +257,9 @@ namespace automotive {
         // This method will do the main data processing job.
         // Therefore, it tries to open the real camera first. If that fails, the virtual camera images from camgen are used.
         odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode LaneFollower::body() {
-
 	        // Get configuration data.
 	        KeyValueConfiguration kv = getKeyValueConfiguration();
 	        m_debug = kv.getValue<int32_t> ("lanefollower.debug") == 1;
-
-		cout << "Gots me a debug value yall" << endl;
 
             // Initialize fonts.
             const double hscale = 0.4;

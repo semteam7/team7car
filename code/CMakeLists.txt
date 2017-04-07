@@ -52,6 +52,8 @@ add_subdirectory(control)
 add_subdirectory(overtaking)
 add_subdirectory(lanefollower)
 add_subdirectory(lanedetector)
+add_subdirectory(VCR)
+add_subdirectory(proxy)
 ###########################################################################
 # Enable CPack to create .deb and .rpm.
 #

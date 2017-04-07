@@ -6,9 +6,6 @@ services:
                 network_mode: "host"
                 volumes:
                         - ${conf}:/opt/configuration
-                        - /tmp/.X11-unix:/tmp/.X11-unix:ro
-                environment:
-                        - DISPLAY=${DISPLAY}
                 ipc: host
                 command: /opt/opendlv.scaledcars/bin/lanedetector --freq=$FREQ --cid=111 --verbose=1 -e DISPLAY=$$DISPLAY
                 working_dir: /opt/configuration

@@ -1,7 +1,16 @@
 #!/bin/bash
 export conf=~/DIT-168 
-export FREQ=10 
+export FREQ=10
 xhost +
+select FOLDER in configs/*
+do echo $FOLDER
+
+ export conf=$PWD/$FOLDER
+	break;
+
+
+done
+
 CONTINUE="CONTINUE"
 
 touch "$CONTINUE"

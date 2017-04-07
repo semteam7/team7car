@@ -84,6 +84,7 @@ namespace automotive {
 
 		        // Check if we have already attached to the shared memory containing the image from the virtual camera.
 		        if (!m_hasAttachedToSharedImageMemory) {
+					cout << "Check if we have already Gots me a debug value yall" << endl;
 			        m_sharedImageMemory = odcore::wrapper::SharedMemoryFactory::attachToSharedMemory(si.getName());
 		        }
 
@@ -100,6 +101,7 @@ namespace automotive {
 			        if (m_image != NULL) {
 				        memcpy(m_image->imageData, m_sharedImageMemory->getSharedMemory(), si.getWidth() * si.getHeight() * si.getBytesPerPixel());
 			        }
+			cout << "Example: Simply copy the image .. Gots me a debug value yall" << endl;
 
 			        // Mirror the image.
 			        cvFlip(m_image, 0, -1);
@@ -112,10 +114,12 @@ namespace automotive {
 
         // This method is called to process an image described by the SharedImage data structure.
         void LaneDetector::processImage() {
+		cout << " This method is called to  Gots me a debug value yall" << endl;
             // Example: Show the image.
             if (m_debug) {
                 if (m_image != NULL) {
                     cvShowImage("Camera Feed Image", m_image);
+			cout << "cvShowImage  Gots me a debug value yall" << endl;
                     cvWaitKey(10);
                 }
             }

@@ -17,7 +17,7 @@
 
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
-PROJECT (lanefollower)
+PROJECT (VCR)
 
 ###########################################################################
 # Set the search path for .cmake files.
@@ -47,27 +47,17 @@ SET(OPENDAVINCI_DIR "${CMAKE_INSTALL_PREFIX}")
 FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
 ###########################################################################
-# Find AutomotiveData.
-SET(AUTOMOTIVEDATA_DIR "${CMAKE_INSTALL_PREFIX}")
-FIND_PACKAGE (AutomotiveData REQUIRED)
-
-###########################################################################
 # Find OpenCV.
 SET(OPENCV_ROOT_DIR "/usr")
-IF("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
-    SET(OPENCV_ROOT_DIR "/usr/local")
-ENDIF()
 FIND_PACKAGE (OpenCV REQUIRED)
 
 ###########################################################################
 # Set linking libraries to successfully link test suites and binaries.
-SET (LIBRARIES ${OPENDAVINCI_LIBRARIES} ${AUTOMOTIVEDATA_LIBRARIES} ${OPENCV_LIBRARIES})
+SET (LIBRARIES ${OPENDAVINCI_LIBRARIES} ${OPENCV_LIBRARIES})
 
 ###########################################################################
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (${OPENDAVINCI_INCLUDE_DIRS})
-# Set header files from AutomotiveData.
-INCLUDE_DIRECTORIES (${AUTOMOTIVEDATA_INCLUDE_DIRS})
 # Set header files from OpenCV.
 INCLUDE_DIRECTORIES (${OPENCV_INCLUDE_DIRS})
 # Set include directory.

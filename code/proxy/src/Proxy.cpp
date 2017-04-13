@@ -26,12 +26,6 @@
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/data/TimeStamp.h"
 
-#include "OpenCVCamera.h"
-
-#ifdef HAVE_UEYE
-    #include "uEyeCamera.h"
-#endif
-
 #include "Proxy.h"
 
 namespace automotive {

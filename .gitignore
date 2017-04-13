@@ -5,3 +5,6 @@ builds
 *~
 *.pyc
 .idea
+CMakeFiles
+cmake-build-debug
+

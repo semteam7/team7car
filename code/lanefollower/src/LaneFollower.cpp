@@ -461,4 +461,3 @@ namespace automotive {
 
     }
 } // automotive::miniature
-

@@ -1,0 +1,11 @@
+Component	Pin
+Odometer out A	D5
+Odometer out B	D3
+Servo		D2,D4
+Servo detector	A3
+ESC		???
+IR1		A0
+IR2		A1
+IR3		A2
+US1		IC2-SCL1
+US2		IC2-SCL2

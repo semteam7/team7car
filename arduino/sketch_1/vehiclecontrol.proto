@@ -1,0 +1,9 @@
+package scaledcars;
+message VehicleCommand{
+    optional double speed = 1;
+    optional double acceleration = 2;
+    optional double steeringWheelAngle = 3;
+    optional bool brakeLights = 4;
+    optional bool flashingLightsLeft = 5;
+    optional bool flashingLightsRight = 6;
+}

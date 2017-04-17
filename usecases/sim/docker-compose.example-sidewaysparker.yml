@@ -7,5 +7,5 @@ services:
                 volumes:
                         - ${conf}:/opt/configuration
                 ipc: host
-                command: /opt/opendlv.scaledcars/bin/miniature/sidewaysparker --freq=$FREQ --cid=111 --verbose=1 -e DISPLAY=$$DISPLAY
+                command: /opt/opendlv.scaledcars/bin/sidewaysparker --freq=$FREQ --cid=111 --verbose=1 -e DISPLAY=$$DISPLAY
                 working_dir: /opt/configuration

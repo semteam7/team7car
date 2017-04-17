@@ -32,7 +32,6 @@ boolean newData = false;
 Servo esc, steering;
 
 void setup() {
-<<<<<<< HEAD
   pinMode(ESC_PIN, OUTPUT);
   pinMode(SERVO_CONTROL_PIN, OUTPUT);
   pinMode(RC_STEERING_PIN, INPUT);
@@ -40,9 +39,6 @@ void setup() {
   
   esc.attach(ESC_PIN);
   steering.attach(SERVO_CONTROL_PIN);
-=======
-    // put your setup code here, to run once:
->>>>>>> 1ab00f6260e8725746c0e50c32bd90a16d41ddcb
 
   Serial.begin(9600);
 }
@@ -51,7 +47,6 @@ int rcThrottleValue, rcSteeringValue;
 bool safetyStop = false;
 
 void loop() {
-<<<<<<< HEAD
   readFromSerial();
   showNewData();
 }
@@ -75,8 +70,3 @@ void showNewData() {
     newData = false;
  }
 }
-=======
-    // put your main code here, to run repeatedly:
-
-}
->>>>>>> 1ab00f6260e8725746c0e50c32bd90a16d41ddcb

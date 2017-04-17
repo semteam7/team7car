@@ -8,7 +8,6 @@ services:
                 depends_on:
                         - odsupercomponent
                 devices:
-
                         - "/dev/video1:/dev/video0"
                 volumes:
                         - ${conf}:/opt/configuration
@@ -19,4 +18,10 @@ services:
                 network_mode: host
                 ipc: host
                 command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111 --freq=20 --ipc=host -e DISPLAY=$$DISPLAY"
-                
+
+                user: odv
+                network_mode: host
+                ipc: host
+                command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111 --freq=20"
+
+

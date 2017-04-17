@@ -227,7 +227,7 @@ odsimvehicle.LinearBicycleModel.KdynamicBrake=60.0
 #
 # CONFIGURATION FOR LANEFOLLOWER
 #
-lanefollower.camera_id = 0 # select here the proper camera
+lanefollower.camera_id = 2 # select here the proper camera
 lanefollower.debug = 1      # set to 0 to disable any windows and further output
 
 
@@ -362,11 +362,11 @@ lanedetector.showRes_finalResult = 0
 lanedetector.showRes_createTrajectory = 1
 lanedetector.threshBaseParameter=48
 
-proxy-camera.camera.debug = 0       # 1 = show recording (requires X11), 0 = otherwise.
-proxy-camera.camera.name = DocumentationCamera0
+proxy-camera.camera.debug = 1       # 1 = show recording (requires X11), 0 = otherwise.
+proxy-camera.camera.name = WebCam
 proxy-camera.camera.id = 0          # Select here the proper ID for OpenCV.
 proxy-camera.camera.width = 640
 proxy-camera.camera.height = 480
 proxy-camera.camera.bpp = 3
-proxy-camera.camera.flipped = 1     # 1 = flipped image, 0 = not flipped image.
+proxy-camera.camera.flipped = 0    # 1 = flipped image, 0 = not flipped image.
 

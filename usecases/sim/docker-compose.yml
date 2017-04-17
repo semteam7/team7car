@@ -32,9 +32,12 @@ services:
                 network_mode: "host"
                 volumes:
                         - ${conf}:/opt/configuration  
-                        - /tmp/.X11-unix:/tmp/.X11-unix:ro 
+                        - /tmp/.X11-unix:/tmp/.X11-unix:ro
+                        - ~/recordings:/opt/recordings 
+                ipc: host
+                user: odv
                 environment:
                         - DISPLAY=${DISPLAY}
-                command: /opt/od4/bin/odcockpit --freq=$FREQ --cid=111 --verbose=0 --ipc=host -e DISPLAY=$$DISPLAY
+                command: /opt/od4/bin/odcockpit --freq=$FREQ --cid=111 --verbose=0 -e DISPLAY=$$DISPLAY
                 depends_on: ['odsupercomponent']
                 working_dir: "/opt/configuration"

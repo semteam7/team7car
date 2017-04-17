@@ -34,8 +34,6 @@ Servo esc, steering;
 void setup() {
   pinMode(ESC_PIN, OUTPUT);
   pinMode(SERVO_CONTROL_PIN, OUTPUT);
-  pinMode(RC_STEERING_PIN, INPUT);
-  pinMode(RC_THROTTLE_PIN, INPUT);
   
   esc.attach(ESC_PIN);
   steering.attach(SERVO_CONTROL_PIN);
@@ -62,11 +60,22 @@ void readFromSerial(){
 
 void showNewData() {
     if (newData == true) {
-    Serial.print("This just in ... ");
-    for(int i = 0; i<sizeof(receivedBytes)-1; i++){
-      Serial.print(receivedBytes[i]);
-    }
-    Serial.println("");
-    newData = false;
+      Serial.print("This just in ... ");
+      for(int i = 0; i<sizeof(receivedBytes)-1; i++){
+        Serial.print(receivedBytes[i]);
+      }
+      Serial.println("");
+      newData = false;
  }
 }
+//name setSpeed already used by something
+void updateSpeed(int inSpeed){
+  esc.write(inSpeed);
+  println("Speed set to " + inSpeed);
+}
+
+void setAngle(int inAngle){
+  steering.write(inAngle);
+  println("Angle set to " + inAngle);
+}
+

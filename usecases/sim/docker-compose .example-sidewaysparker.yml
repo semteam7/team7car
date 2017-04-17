@@ -1,0 +1,14 @@
+version: '2'
+
+services:
+        sidewaysparker:
+                build: .
+                network_mode: "host"
+                volumes:
+                        - ${conf}:/opt/configuration
+                        - /tmp/.X11-unix:/tmp/.X11-unix:ro
+                environment:
+                        - DISPLAY=${DISPLAY}
+                ipc: host
+                command: /opt/opendlv.scaledcars/bin/scaledcars-control-example --freq=$FREQ --cid=111 --verbose=1 -e DISPLAY=$$DISPLAY
+                working_dir: /opt/configuration

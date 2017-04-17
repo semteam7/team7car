@@ -8,7 +8,6 @@ services:
                 depends_on:
                         - odsupercomponent
                 devices:
-
                         - "/dev/video1:/dev/video0"
                 volumes:
                         - ${conf}:/opt/configuration

@@ -225,9 +225,9 @@ namespace automotive {
 //            const double Kd = 0;
 
             // The following values have been determined by Twiddle algorithm.
-            const double Kp = 0.4482626884328734;
-            const double Ki = 3.103197570937628;
-            const double Kd = 0.030450210485408566;
+            const double Kp = 1.29;
+            const double Ki = 0.01;
+            const double Kd = 0.1;
 
             const double p = Kp * e;
             const double i = Ki * timeStep * m_eSum;

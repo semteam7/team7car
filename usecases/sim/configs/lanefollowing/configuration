@@ -362,7 +362,7 @@ lanedetector.showRes_finalResult = 0
 lanedetector.showRes_createTrajectory = 1
 lanedetector.threshBaseParameter=48
 
-proxy-camera.camera.debug = 1       # 1 = show recording (requires X11), 0 = otherwise.
+proxy-camera.camera.debug = 0       # 1 = show recording (requires X11), 0 = otherwise.
 proxy-camera.camera.name = WebCam
 proxy-camera.camera.id = 0          # Select here the proper ID for OpenCV.
 proxy-camera.camera.width = 640

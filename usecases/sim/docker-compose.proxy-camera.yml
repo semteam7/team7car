@@ -9,19 +9,13 @@ services:
                         - odsupercomponent
                 devices:
 
-                        - "/dev/video1:/dev/video0"
+                        - "/dev/video0:/dev/video0"
                 volumes:
                         - ${conf}:/opt/configuration
                         - /tmp/.X11-unix:/tmp/.X11-unix:ro
                 environment:
                         - DISPLAY=${DISPLAY}
-                user: odv
                 network_mode: host
                 ipc: host
                 command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111 --freq=20 --ipc=host -e DISPLAY=$$DISPLAY"
-                user: odv
-                network_mode: host
-                ipc: host
-                command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111 --freq=20"
-
 

@@ -17,14 +17,14 @@ int IR_3 = 2;
 int US_1;
 int US_2;
 
-int STEERING_STRAIGHT=135;
-int STEERING_FULL_LEFT=90;
-int STEERING_FULL_RIGHT=180;
+int STEERING_STRAIGHT = 135;
+int STEERING_FULL_LEFT = 90;
+int STEERING_FULL_RIGHT = 180;
 int SPEED_INPUT;
 int STEERING_INPUT;
 
-const byte numChars=32;
-byte receivedBytes[numChars];
+const byte numChars = 80;
+char receivedBytes[numChars];
 
 boolean newData = false;
 
@@ -34,11 +34,12 @@ Servo esc, steering;
 void setup() {
   pinMode(ESC_PIN, OUTPUT);
   pinMode(SERVO_CONTROL_PIN, OUTPUT);
-  
+
   esc.attach(ESC_PIN);
   steering.attach(SERVO_CONTROL_PIN);
 
   Serial.begin(9600);
+  Serial.println("Honey I'm hoooome!");
 }
 
 int rcThrottleValue, rcSteeringValue;
@@ -50,31 +51,41 @@ void loop() {
 }
 
 
-void readFromSerial(){
-  char terminate = '>';
-  if(Serial.available()>0){
+void readFromSerial() {
+  char terminate = '\n';
+  if (Serial.available() > 0) {
     Serial.readBytesUntil(terminate, receivedBytes, numChars);
     newData = true;
+  } else {
+    
+  }
+}
+
+//Speed: Steeringwheelangle \n
+
+void parseData(char recievedBytes[]){
+  for(int i = 0; i < sizeof(receivedBytes); i++){
+    
   }
 }
 
 void showNewData() {
-    if (newData == true) {
-      Serial.print("This just in ... ");
-      for(int i = 0; i<sizeof(receivedBytes)-1; i++){
-        Serial.print(receivedBytes[i]);
-      }
-      Serial.println("");
-      newData = false;
- }
+  if (newData == true) {
+    Serial.print("This just in ... ");
+    for (int i = 0; i < sizeof(receivedBytes) - 1; i++) {
+      Serial.print(receivedBytes[i]);
+    }
+    Serial.println("");
+    newData = false;
+  }
 }
 //name setSpeed already used by something
-void updateSpeed(int inSpeed){
+void updateSpeed(int inSpeed) {
   esc.write(inSpeed);
   Serial.println("Speed set to " + inSpeed);
 }
 
-void setAngle(int inAngle){
+void setAngle(int inAngle) {
   steering.write(inAngle);
   Serial.println("Angle set to " + inAngle);
 }

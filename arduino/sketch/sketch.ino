@@ -64,9 +64,18 @@ void readFromSerial() {
 //Speed: Steeringwheelangle \n
 
 void parseData(char recievedBytes[]){
+  char tmp[4];
   for(int i = 0; i < sizeof(receivedBytes); i++){
-    
+    int x = 0;
+    if (i > 1){
+      tmp[x] = receivedBytes[i];
+      x++;
+    }
   }
+  int n;
+  n = atoi(tmp);
+  setAngle(n);
+  
 }
 
 void showNewData() {
@@ -77,6 +86,7 @@ void showNewData() {
     }
     Serial.println("");
     newData = false;
+    receivedBytes[0] = (char)0;
   }
 }
 //name setSpeed already used by something

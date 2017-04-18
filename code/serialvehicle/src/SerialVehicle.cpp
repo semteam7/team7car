@@ -30,6 +30,12 @@
 #include <opendavinci/GeneratedHeaders_OpenDaVINCI.h>
 #include <automotivedata/GeneratedHeaders_AutomotiveData.h>
 
+#include <string>
+#include <memory>
+
+#include <opendavinci/odcore/wrapper/SerialPort.h>
+#include <opendavinci/odcore/wrapper/SerialPortFactory.h>
+
 #include "SerialVehicle.h"
 
 namespace scaledcars {
@@ -39,25 +45,43 @@ using namespace std;
 using namespace odcore::base;
 using namespace odcore::data;
 using namespace odcore::data::image;
+using namespace automotive;
 
-SerialVehicle::SerialVehicle(const int &argc, char **argv)
-    : DataTriggeredConferenceClientModule(argc, argv, "serialvehicle"){}
+using namespace odcore;
+using namespace odcore::wrapper;
+
+
+    SerialVehicle::SerialVehicle(const int &argc, char **argv)
+    : DataTriggeredConferenceClientModule(argc, argv, "serialvehicle") {}
 
 SerialVehicle::~SerialVehicle() {}
 
 void SerialVehicle::setUp() {
     // Attach to serial port
-    cout << "setup" << endl;
+    // We are using OpenDaVINCI's std::shared_ptr to automatically
+    // release any acquired resources.
+
+    try {
+        m_serial = std::shared_ptr<SerialPort>(SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
+        cout << "Connected to serial port ttyACM0" << endl;
+    }
+    catch(string &exception) {
+        cerr << "Serial port could not be created: " << exception << endl;
+        exit(0);
+    }
+
 }
 
 void SerialVehicle::tearDown() {
     // Release serial port
-    cout << "teardown" << endl;
 }
 
 void SerialVehicle::nextContainer(odcore::data::Container &c) {
-    if (c.getDataType() == odcore::data::image::SharedImage::ID()) {
-            cout << "woop" << endl;
+    if (c.getDataType() == VehicleControl::ID()) {
+            VehicleControl vc = c.getData<VehicleControl> ();
+            m_serial->send(std::to_string(vc.getSpeed())+ ";" + std::to_string(vc.getSteeringWheelAngle()) + "\n");
+            cout << "Sent VehicleControl to the things, it said: " << vc.toString() << endl;
+            cout << vc.getSpeed() << ";" << vc.getSteeringWheelAngle() << endl;
         }
     }
 }

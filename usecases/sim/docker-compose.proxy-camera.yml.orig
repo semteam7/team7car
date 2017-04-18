@@ -1,0 +1,30 @@
+version: "2"
+
+services:
+        proxy-camera:
+                build: .
+                group_add:
+                        - video
+                depends_on:
+                        - odsupercomponent
+                devices:
+
+                        - "/dev/video0:/dev/video0"
+                volumes:
+                        - ${conf}:/opt/configuration
+                        - /tmp/.X11-unix:/tmp/.X11-unix:ro
+                environment:
+                        - DISPLAY=${DISPLAY}
+                network_mode: host
+                ipc: host
+                command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111 --freq=20 --ipc=host -e DISPLAY=$$DISPLAY"
+<<<<<<< HEAD
+=======
+
+                user: odv
+                network_mode: host
+                ipc: host
+                command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111 --freq=20"
+
+>>>>>>> 4e23822e8a8769c0c4c48c40be786d448a4e0c4e
+

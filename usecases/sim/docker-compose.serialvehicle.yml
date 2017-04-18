@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+        serialvehicle:
+                build: .
+                network_mode: "host"
+                volumes:
+                        - ${conf}:/opt/configuration
+                environment:
+                        - DISPLAY=${DISPLAY}
+                network_mode: host
+                ipc: host
+                command: /opt/opendlv.scaledcars/bin/serialvehicle -e DISPLAY=$$DISPLAY --freq=$FREQ --cid=111 --verbose=1
+                working_dir: /opt/configuration
+                devices:
+                        - /dev/ttyACM0

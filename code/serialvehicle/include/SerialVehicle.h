@@ -26,14 +26,22 @@
 
 #include <opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h>
 #include <opendavinci/odcore/data/Container.h>
-#include <opendavinci/odcore/wrapper/SharedMemory.h>
+
+#include <string>
+#include <memory>
+
+#include <opendavinci/odcore/wrapper/SerialPort.h>
+#include <opendavinci/odcore/wrapper/SerialPortFactory.h>
 
 namespace scaledcars {
 namespace team7 {
 
 using namespace std;
+using namespace odcore;
+using namespace odcore::wrapper;
 
-class SerialVehicle : public odcore::base::module::DataTriggeredConferenceClientModule {
+
+    class SerialVehicle : public odcore::base::module::DataTriggeredConferenceClientModule {
    private:
     SerialVehicle(const SerialVehicle & /*obj*/) = delete;
     SerialVehicle &operator=(const SerialVehicle & /*obj*/) = delete;
@@ -46,14 +54,15 @@ class SerialVehicle : public odcore::base::module::DataTriggeredConferenceClient
      * @param argv Command line arguments.
      */
     SerialVehicle(const int &argc, char **argv);
-
     virtual ~SerialVehicle();
-
     virtual void nextContainer(odcore::data::Container &c);
 
    private:
     void setUp();
     void tearDown();
+    const string   SERIAL_PORT =  "/dev/ttyACM0";
+    const uint32_t BAUD_RATE = 9600;
+    std::shared_ptr<SerialPort> m_serial;
 };
 }
 } // scaledcars::perception

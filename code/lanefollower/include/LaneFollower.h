@@ -99,6 +99,7 @@ namespace automotive {
 	            virtual void tearDown();
 
                 void processImage();
+                void canny();
         };
 
     }

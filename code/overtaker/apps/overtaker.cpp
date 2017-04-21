@@ -1,6 +1,6 @@
 /**
- * Example - Example code.
- * Copyright (C) 2016 Christian Berger
+ * overtaker - Sample application for overtaking obstacles.
+ * Copyright (C) 2012 - 2015 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,26 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef SCALEDCARS_CONTROL_EXAMPLE_TESTSUITE_H
-#define SCALEDCARS_CONTROL_EXAMPLE_TESTSUITE_H
+#include "Overtaker.h"
 
-#include "cxxtest/TestSuite.h"
-
-// Include local header files.
-#include "../include/Example.h"
-
-using namespace std;
-using namespace scaledcars::control;
-
-class ExampleControlTest : public CxxTest::TestSuite {
-   public:
-    void setUp() {}
-
-    void tearDown() {}
-
-    void testApplication() {
-        TS_ASSERT(true);
-    }
-};
-
-#endif /*SCALEDCARS_CONTROL_EXAMPLE_TESTSUITE_H*/
+int32_t main(int32_t argc, char **argv) {
+    automotive::miniature::Overtaker ot(argc, argv);
+    return ot.runModule();
+}

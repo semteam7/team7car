@@ -18,9 +18,12 @@
  */
 
 #include <iostream>
+#include "vector"
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 #include "opendavinci/odcore/base/KeyValueConfiguration.h"
 #include "opendavinci/odcore/base/Lock.h"
@@ -32,6 +35,7 @@
 #include "opendavinci/GeneratedHeaders_OpenDaVINCI.h"
 
 #include "LaneFollower.h"
+#include <vector> 
 
 namespace automotive {
     namespace miniature {
@@ -39,6 +43,8 @@ namespace automotive {
   	
 		IplImage* greyImage; // gray image for the conversion of the original image
     	IplImage* cannyImage;
+    	vector<cv::Vec4i> lines;
+
 
         using namespace std;
         using namespace odcore::base;
@@ -129,11 +135,43 @@ namespace automotive {
             cannyImage = cvCreateImage(cvGetSize(m_image), IPL_DEPTH_8U, 1);
 
         						 //50, 150, 3
-        cvCanny(greyImage, cannyImage, 50, 150, 3);
+        cvCanny(greyImage, cannyImage, 50, 250, 3);
+
+        	//m_image = cannyImage;
+
+  //         vector<Vec2f> lines;  
+  // 	HoughLines(cv::Mat(m_image), lines, 1, CV_PI/180, 100, 0, 0 );
+
+  // for( size_t i = 0; i < lines.size(); i++ )  
+  // {  
+  //    float rho = lines[i][0], theta = lines[i][1];  
+  //    cv::Point pt1, pt2;  
+  //    double a = cos(theta), b = sin(theta);  
+  //    double x0 = a*rho, y0 = b*rho;  
+  //    pt1.x = cv::cvRound(x0 + 1000*(-b));  
+  //    pt1.y = cv::cvRound(y0 + 1000*(a));  
+  //    pt2.x = cv::cvRound(x0 - 1000*(-b));  
+  //    pt2.y = cv::cvRound(y0 - 1000*(a));  
+  //    cv::line( cv::Mat(cannyImage), pt1, pt2, cv::Scalar(0,0,255), 3, CV_AA);  
+  } 
+
+
+
+
+  		// 	cv::HoughLinesP(cv::Mat(cannyImage), lines, 1, CV_PI/180, 50, 50, 10 );
+  		// 	for( size_t i = 0; i < lines.size(); i++ ){
+    // 			vector<cv::Vec4i> l = lines[i]; //cv::Vec4i l = lines[i];
+    // 		cv::line(greyImage, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0,0,255), 3);
+  		// }
+
+
         }
 
 
         void LaneFollower::processImage() {
+        	// Apply canny algorithm first
+        	canny();
+
             static bool useRightLaneMarking = true;
             double e = 0;
 
@@ -170,8 +208,6 @@ namespace automotive {
                 }
 
                 if (m_debug) {
-
-                	canny(); // apply canny algorithm
                    
                     if (left.x > 0) {
                     	CvScalar green = CV_RGB(0, 255, 0);

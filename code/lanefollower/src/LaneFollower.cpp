@@ -129,49 +129,18 @@ namespace automotive {
 
         void LaneFollower::canny(){
 
-        	greyImage = cvCreateImage( cvSize(m_image->width, m_image->height), IPL_DEPTH_8U, 1 );
-     	    cvCvtColor( m_image, greyImage, CV_BGR2GRAY );
+          greyImage = cvCreateImage( cvSize(m_image->width, m_image->height), IPL_DEPTH_8U, 1 );
+     	  cvCvtColor( m_image, greyImage, CV_BGR2GRAY );
 
-            cannyImage = cvCreateImage(cvGetSize(m_image), IPL_DEPTH_8U, 1);
+         cannyImage = cvCreateImage(cvGetSize(m_image), IPL_DEPTH_8U, 1);
 
-        						 //50, 150, 3
-        cvCanny(greyImage, cannyImage, 50, 250, 3);
-
-        	//m_image = cannyImage;
-
-  //         vector<Vec2f> lines;  
-  // 	HoughLines(cv::Mat(m_image), lines, 1, CV_PI/180, 100, 0, 0 );
-
-  // for( size_t i = 0; i < lines.size(); i++ )  
-  // {  
-  //    float rho = lines[i][0], theta = lines[i][1];  
-  //    cv::Point pt1, pt2;  
-  //    double a = cos(theta), b = sin(theta);  
-  //    double x0 = a*rho, y0 = b*rho;  
-  //    pt1.x = cv::cvRound(x0 + 1000*(-b));  
-  //    pt1.y = cv::cvRound(y0 + 1000*(a));  
-  //    pt2.x = cv::cvRound(x0 - 1000*(-b));  
-  //    pt2.y = cv::cvRound(y0 - 1000*(a));  
-  //    cv::line( cv::Mat(cannyImage), pt1, pt2, cv::Scalar(0,0,255), 3, CV_AA);  
-  //} 
-
-
-
-
-  		// 	cv::HoughLinesP(cv::Mat(cannyImage), lines, 1, CV_PI/180, 50, 50, 10 );
-  		// 	for( size_t i = 0; i < lines.size(); i++ ){
-    // 			vector<cv::Vec4i> l = lines[i]; //cv::Vec4i l = lines[i];
-    // 		cv::line(greyImage, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0,0,255), 3);
-  		// }
-
+        							 //50, 150, 3
+        cvCanny(greyImage, cannyImage, 50, 150, 3);
 
         }
 
 
         void LaneFollower::processImage() {
-        	// Apply canny algorithm first
-        	canny();
-
             static bool useRightLaneMarking = true;
             double e = 0;
 
@@ -180,14 +149,14 @@ namespace automotive {
             const int32_t distance = 280;
 
             TimeStamp beforeImageProcessing;
-            for(int32_t y = m_image->height - 8; y > m_image->height * .6; y -= 10) {
+            for(int32_t y = cannyImage->height - 8; y > cannyImage->height * .6; y -= 10) {
                 // Search from middle to the left:
                 CvScalar pixelLeft;
                 CvPoint left;
                 left.y = y;
                 left.x = -1;
-                for(int x = m_image->width/2; x > 0; x--) {
-		            pixelLeft = cvGet2D(m_image, y, x);
+                for(int x = cannyImage->width/2; x > 0; x--) {
+		            pixelLeft = cvGet2D(cannyImage, y, x);
 		            if (pixelLeft.val[0] >= 200) {
                         left.x = x;
                         break;
@@ -199,8 +168,8 @@ namespace automotive {
                 CvPoint right;
                 right.y = y;
                 right.x = -1;
-                for(int x = m_image->width/2; x < m_image->width; x++) {
-		            pixelRight = cvGet2D(m_image, y, x);
+                for(int x = cannyImage->width/2; x < cannyImage->width; x++) {
+		            pixelRight = cvGet2D(cannyImage, y, x);
 		            if (pixelRight.val[0] >= 200) {
                         right.x = x;
                         break;
@@ -208,22 +177,21 @@ namespace automotive {
                 }
 
                 if (m_debug) {
-                   
                     if (left.x > 0) {
                     	CvScalar green = CV_RGB(0, 255, 0);
-                    	cvLine(m_image, cvPoint(m_image->width/2, y), left, green, 1, 8);
+                    	cvLine(cannyImage, cvPoint(cannyImage->width/2, y), left, green, 1, 8);
 
                         stringstream sstr;
-                        sstr << (m_image->width/2 - left.x);
-                    	cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 - 100, y - 2), &m_font, green);
+                        sstr << (cannyImage->width/2 - left.x);
+                    	cvPutText(cannyImage, sstr.str().c_str(), cvPoint(cannyImage->width/2 - 100, y - 2), &m_font, green);
                     }
                     if (right.x > 0) {
                     	CvScalar red = CV_RGB(255, 0, 0);
-                    	cvLine(m_image, cvPoint(m_image->width/2, y), right, red, 1, 8);
+                    	cvLine(cannyImage, cvPoint(cannyImage->width/2, y), right, red, 1, 8);
 
                         stringstream sstr;
-                        sstr << (right.x - m_image->width/2);
-                    	cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 + 100, y - 2), &m_font, red);
+                        sstr << (right.x - cannyImage->width/2);
+                    	cvPutText(cannyImage, sstr.str().c_str(), cvPoint(cannyImage->width/2 + 100, y - 2), &m_font, red);
                     }
                 }
 
@@ -235,7 +203,7 @@ namespace automotive {
                             m_eOld = 0;
                         }
 
-                        e = ((right.x - m_image->width/2.0) - distance)/distance;
+                        e = ((right.x - cannyImage->width/2.0) - distance)/distance;
 
                         useRightLaneMarking = true;
                     }
@@ -245,7 +213,7 @@ namespace automotive {
                             m_eOld = 0;
                         }
                         
-                        e = (distance - (m_image->width/2.0 - left.x))/distance;
+                        e = (distance - (cannyImage->width/2.0 - left.x))/distance;
 
                         useRightLaneMarking = false;
                     }
@@ -323,7 +291,7 @@ namespace automotive {
             const double hscale = 0.4;
             const double vscale = 0.3;
             const double shear = 0.2;
-            const int thickness = 1;
+            const int thickness = 10;
             const int lineType = 6;
 
             cvInitFont(&m_font, CV_FONT_HERSHEY_DUPLEX, hscale, vscale, shear, thickness, lineType);
@@ -366,6 +334,7 @@ namespace automotive {
 
 		        // Process the read image and calculate regular lane following set values for control algorithm.
 		        if (true == has_next_frame) {
+		        	canny(); // Apply canny algorithm on the image
 			        processImage();
 		        }
 

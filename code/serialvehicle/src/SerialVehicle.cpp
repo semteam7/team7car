@@ -50,10 +50,8 @@ using namespace automotive;
 using namespace odcore;
 using namespace odcore::wrapper;
 
-
     SerialVehicle::SerialVehicle(const int &argc, char **argv)
     : DataTriggeredConferenceClientModule(argc, argv, "serialvehicle") {}
-
 SerialVehicle::~SerialVehicle() {}
 
 void SerialVehicle::setUp() {
@@ -62,11 +60,10 @@ void SerialVehicle::setUp() {
     // release any acquired resources.
 
     try {
-        m_serial = std::shared_ptr<SerialPort>(SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
         cout << "Connected to serial port ttyACM0" << endl;
     }
     catch(string &exception) {
-        cerr << "Serial port could not be created: " << exception << endl;
+        cerr << exception << endl;
         exit(0);
     }
 
@@ -77,12 +74,30 @@ void SerialVehicle::tearDown() {
 }
 
 void SerialVehicle::nextContainer(odcore::data::Container &c) {
+    m_serial = std::shared_ptr<SerialPort>(SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
+    m_serial->setStringListener(this);
+    m_serial->start();
+
     if (c.getDataType() == VehicleControl::ID()) {
-            VehicleControl vc = c.getData<VehicleControl> ();
-            m_serial->send(std::to_string(vc.getSpeed())+ ";" + std::to_string(vc.getSteeringWheelAngle()) + "\n");
-            cout << "Sent VehicleControl to the things, it said: " << vc.toString() << endl;
-            cout << vc.getSpeed() << ";" << vc.getSteeringWheelAngle() << endl;
+            vc_count++;
+            if(vc_count % 10 == 0)
+            {
+                VehicleControl vc = c.getData<VehicleControl> ();
+
+                string command = std::to_string(vc.getSpeed())+ ";" + std::to_string(vc.getSteeringWheelAngle()) + "\r\n";
+                m_serial->send(command);
+                cout << "Sent command: " << command;
+            }
         }
-    }
+
+    m_serial->stop();
+    m_serial->setStringListener(NULL);
+}
+
+void SerialVehicle::nextString(const string &s)
+{
+    cout << "Received " << s.length() << " bytes: " << s << endl;
+}
+
 }
 } // scaledcars::perception

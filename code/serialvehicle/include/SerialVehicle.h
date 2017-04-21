@@ -33,6 +33,9 @@
 #include <opendavinci/odcore/wrapper/SerialPort.h>
 #include <opendavinci/odcore/wrapper/SerialPortFactory.h>
 
+
+#define BUFFER_LENGTH 10
+
 namespace scaledcars {
 namespace team7 {
 
@@ -41,7 +44,9 @@ using namespace odcore;
 using namespace odcore::wrapper;
 
 
-    class SerialVehicle : public odcore::base::module::DataTriggeredConferenceClientModule {
+    class SerialVehicle
+            : public odcore::base::module::DataTriggeredConferenceClientModule,
+              public odcore::io::StringListener {
    private:
     SerialVehicle(const SerialVehicle & /*obj*/) = delete;
     SerialVehicle &operator=(const SerialVehicle & /*obj*/) = delete;
@@ -56,13 +61,16 @@ using namespace odcore::wrapper;
     SerialVehicle(const int &argc, char **argv);
     virtual ~SerialVehicle();
     virtual void nextContainer(odcore::data::Container &c);
+    virtual void nextString(const string &s);
 
    private:
     void setUp();
     void tearDown();
     const string   SERIAL_PORT =  "/dev/ttyACM0";
-    const uint32_t BAUD_RATE = 9600;
+    const uint32_t BAUD_RATE = 57600;
     std::shared_ptr<SerialPort> m_serial;
+//    VehicleControl vc_buffer[];
+    int vc_count = 0;
 };
 }
 } // scaledcars::perception

@@ -6,7 +6,7 @@ services:
                 network_mode: "host"
                 volumes:
                         - ${conf}:/opt/configuration
-                command: /opt/od4/bin/odsupercomponent --freq=$FREQ --cid=111 --verbose=1
+                command: /opt/od4/bin/odsupercomponent --freq=$FREQ --cid=111 --verbose=0
                 working_dir: /opt/configuration
         odsimvehicle:
                 build: .

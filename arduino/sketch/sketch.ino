@@ -24,7 +24,8 @@ int SPEED_INPUT;
 int STEERING_INPUT;
 
 const byte numChars = 80;
-char receivedBytes[numChars];
+#define SERIAL_BUFFER 1000
+byte receivedBytes[SERIAL_BUFFER];
 
 boolean newData = false;
 
@@ -38,8 +39,12 @@ void setup() {
   esc.attach(ESC_PIN);
   steering.attach(SERVO_CONTROL_PIN);
 
-  Serial.begin(9600);
-  Serial.println("Honey I'm hoooome!");
+  Serial.begin(57600);
+}
+
+void testSteering(){
+  setAngle(STEERING_FULL_RIGHT);
+  delay(2000);
 }
 
 int rcThrottleValue, rcSteeringValue;
@@ -47,49 +52,25 @@ bool safetyStop = false;
 
 void loop() {
   readFromSerial();
-  showNewData();
 }
 
 
 void readFromSerial() {
-  char terminate = '\n';
-  if (Serial.available() > 0) {
-    Serial.readBytesUntil(terminate, receivedBytes, numChars);
-    newData = true;
-  } else {
+
+  while(Serial.available())
+  {
+    Serial.write(Serial.read());
     
   }
-}
-
-//Speed: Steeringwheelangle \n
-
-void parseData(char recievedBytes[]){
-  char tmp[4];
-  for(int i = 0; i < sizeof(receivedBytes); i++){
-    int x = 0;
-    if (i > 1){
-      tmp[x] = receivedBytes[i];
-      x++;
-    }
+  String command;
+  if(Serial.available() > 0)
+  {
+    command = Serial.readStringUntil('\n');
+    Serial.println("Received control message: " + command);
   }
-  int n;
-  n = atoi(tmp);
-  setAngle(n);
-  
+
 }
 
-void showNewData() {
-  if (newData == true) {
-    Serial.print("This just in ... ");
-    for (int i = 0; i < sizeof(receivedBytes) - 1; i++) {
-      Serial.print(receivedBytes[i]);
-    }
-    Serial.println("");
-    newData = false;
-    receivedBytes[0] = (char)0;
-  }
-}
-//name setSpeed already used by something
 void updateSpeed(int inSpeed) {
   esc.write(inSpeed);
   Serial.println("Speed set to " + inSpeed);
@@ -99,4 +80,3 @@ void setAngle(int inAngle) {
   steering.write(inAngle);
   Serial.println("Angle set to " + inAngle);
 }
-

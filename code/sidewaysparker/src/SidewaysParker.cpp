@@ -89,7 +89,7 @@ namespace automotive {
                 if ((stageMoving >= 40) && (stageMoving < 45)) {
                     // Stop.
                     vc.setSpeed(0);
-                    vc.setSteeringWheelAngle(0);
+                    vc.setSteeringWheelAngle(25);
                     stageMoving++;
                 }
                 if ((stageMoving >= 45) && (stageMoving < 85)) {
@@ -107,7 +107,7 @@ namespace automotive {
                 if (stageMoving >= 220) {
                     // Stop.
                     vc.setSpeed(0);
-                    vc.setSteeringWheelAngle(0);
+                    vc.setSteeringWheelAngle(25);
                 }
 
                 // Measuring state machine.

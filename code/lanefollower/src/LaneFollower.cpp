@@ -36,6 +36,10 @@
 namespace automotive {
     namespace miniature {
 
+  	
+		IplImage* greyImage; // gray image for the conversion of the original image
+    	IplImage* cannyImage;
+
         using namespace std;
         using namespace odcore::base;
         using namespace odcore::data;
@@ -115,9 +119,24 @@ namespace automotive {
 	        return retVal;
         }
 
+
+
+        void LaneFollower::canny(){
+
+        	greyImage = cvCreateImage( cvSize(m_image->width, m_image->height), IPL_DEPTH_8U, 1 );
+     	    cvCvtColor( m_image, greyImage, CV_BGR2GRAY );
+
+            cannyImage = cvCreateImage(cvGetSize(m_image), IPL_DEPTH_8U, 1);
+
+        						 //50, 150, 3
+        cvCanny(greyImage, cannyImage, 50, 150, 3);
+        }
+
+
         void LaneFollower::processImage() {
             static bool useRightLaneMarking = true;
             double e = 0;
+
 
             const int32_t CONTROL_SCANLINE = 462; // calibrated length to right: 280px
             const int32_t distance = 280;
@@ -151,6 +170,9 @@ namespace automotive {
                 }
 
                 if (m_debug) {
+
+                	canny(); // apply canny algorithm
+                   
                     if (left.x > 0) {
                     	CvScalar green = CV_RGB(0, 255, 0);
                     	cvLine(m_image, cvPoint(m_image->width/2, y), left, green, 1, 8);
@@ -205,8 +227,8 @@ namespace automotive {
             // Show resulting features.
             if (m_debug) {
                 if (m_image != NULL) {
-                    cvShowImage("WindowShowImage", m_image);
-                    cvWaitKey(10);
+                    cvShowImage("WindowShowImage", cannyImage); // original: m_image
+                    cvWaitKey(33);
                 }
             }
 

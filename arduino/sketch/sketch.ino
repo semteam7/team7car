@@ -39,7 +39,7 @@ void setup() {
   esc.attach(ESC_PIN);
   steering.attach(SERVO_CONTROL_PIN);
 
-  Serial.begin(57600);  
+  Serial.begin(57600);
 }
 
 void testSteering(){
@@ -51,8 +51,9 @@ int rcThrottleValue, rcSteeringValue;
 bool safetyStop = false;
 
 void loop() {
-  readFromSerial(); 
+  readFromSerial();
 }
+
 
 void readFromSerial() {
 
@@ -65,9 +66,9 @@ void readFromSerial() {
   if(Serial.available() > 0)
   {
     command = Serial.readStringUntil('\n');
-    Serial.println("Received control message: " + command);  
+    Serial.println("Received control message: " + command);
   }
-  
+
 }
 
 void updateSpeed(int inSpeed) {

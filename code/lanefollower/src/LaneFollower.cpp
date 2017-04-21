@@ -153,7 +153,7 @@ namespace automotive {
   //    pt2.x = cv::cvRound(x0 - 1000*(-b));  
   //    pt2.y = cv::cvRound(y0 - 1000*(a));  
   //    cv::line( cv::Mat(cannyImage), pt1, pt2, cv::Scalar(0,0,255), 3, CV_AA);  
-  } 
+  //} 
 
 
 

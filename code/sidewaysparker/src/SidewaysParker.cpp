@@ -115,14 +115,16 @@ namespace automotive {
                     case 0:
                         {
                             // Initialize measurement.
-							cout << "Stage Measuring" << stageMeasuring << endl;
+							cout << "Stage Measuring " << stageMeasuring << endl;
+							cout << "Sensor Distance " << ULTRASONIC_FRONT_RIGHT << endl;
                             distanceOld = sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT);
                             stageMeasuring++;
                         }
                     break;
                     case 1:
                         {
-							cout << "Stage Measuring" << stageMeasuring << endl;
+							cout << "Stage Measuring " << stageMeasuring << endl;
+							cout << "Sensor Distance " << ULTRASONIC_FRONT_RIGHT << endl;
 							
                             // Checking for sequence +, -.
                             if ((distanceOld > 0) && (sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) < 0)) {
@@ -135,7 +137,8 @@ namespace automotive {
                     break;
                     case 2:
                         {
-							cout << "Stage Measuring" << stageMeasuring << endl;
+							cout << "Stage Measuring " << stageMeasuring << endl;
+							cout << "Sensor Distance " << distanceOld << endl;
                             // Checking for sequence -, +.
                             if ((distanceOld < 0) && (sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) > 0)) {
                                 // Found sequence -, +.

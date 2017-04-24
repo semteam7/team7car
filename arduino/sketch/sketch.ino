@@ -56,27 +56,36 @@ void loop() {
 
 
 void readFromSerial() {
-
-  while(Serial.available())
-  {
-    Serial.write(Serial.read());
-    
-  }
   String command;
+  float carSpeed;
+  float carAngle;
   if(Serial.available() > 0)
   {
     command = Serial.readStringUntil('\n');
     Serial.println("Received control message: " + command);
+    int colonIndex = command.indexOf(';');
+    carSpeed = command.substring(0,colonIndex).toFloat();
+    carAngle = command.substring(colonIndex + 1,command.length()).toFloat();
+
+     carSpeed = (carSpeed * 10) + 90;
+     if (carSpeed > 100){
+      carSpeed = 100;
+    }
+    carAngle += 90;
+    
+    Serial.println(carSpeed);
+    updateSpeed(carSpeed);
+    setAngle(carAngle);
   }
 
 }
 
-void updateSpeed(int inSpeed) {
+void updateSpeed(float inSpeed) {
   esc.write(inSpeed);
-  Serial.println("Speed set to " + inSpeed);
+  //Serial.println("Speed set to " + inSpeed);
 }
 
-void setAngle(int inAngle) {
+void setAngle(float inAngle) {
   steering.write(inAngle);
-  Serial.println("Angle set to " + inAngle);
+  //Serial.println("Angle set to " + inAngle);
 }

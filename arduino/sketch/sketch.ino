@@ -71,9 +71,9 @@ void readFromSerial() {
      if (carSpeed > 100){
       carSpeed = 100;
     }
-    carAngle += 90;
+    carAngle = (carAngle * 1.5) + 90;
     
-    Serial.println(carSpeed);
+    Serial.println(carAngle);
     updateSpeed(carSpeed);
     setAngle(carAngle);
   }

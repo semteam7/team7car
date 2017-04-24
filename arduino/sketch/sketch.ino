@@ -62,18 +62,28 @@ void readFromSerial() {
   if(Serial.available() > 0)
   {
     command = Serial.readStringUntil('\n');
-    Serial.println("Received control message: " + command);
+    //Serial.println("Received control message: " + command);
     int colonIndex = command.indexOf(';');
     carSpeed = command.substring(0,colonIndex).toFloat();
     carAngle = command.substring(colonIndex + 1,command.length()).toFloat();
 
-     carSpeed = (carSpeed * 10) + 90;
-     if (carSpeed > 100){
-      carSpeed = 100;
+     carSpeed = (carSpeed * 4.5) + 90;
+     if (carSpeed > 98.9){
+      carSpeed = 98.9;
     }
-    carAngle = (carAngle * 1.5) + 90;
+    carAngle = (carAngle * 52.30) + 90;
+    if (carAngle > 155){
+      carAngle = 155;
+    }
+    else if (carAngle < 35){
+      carAngle = 35;
+    }
     
-    Serial.println(carAngle);
+    //Serial.println(carSpeed);
+    if (carSpeed < 99 && carSpeed > 90){
+      updateSpeed(102);
+    }
+    delay(300);
     updateSpeed(carSpeed);
     setAngle(carAngle);
   }

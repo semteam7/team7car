@@ -353,7 +353,7 @@ namespace automotive {
                     if (stageMoving == FORWARD) {
                         // Use m_vehicleControl data from image processing.
 
-                        stageToRightLaneLeftTurn = 0;
+                        stageToRightLaneLeftTurn = 15;
                         stageToRightLaneRightTurn = 0;
                     }
                     else if (stageMoving == TO_LEFT_LANE_LEFT_TURN) {
@@ -386,8 +386,8 @@ namespace automotive {
                     }
                     else if (stageMoving == TO_RIGHT_LANE_RIGHT_TURN) {
                         // Move to the right lane: Turn right part.
-                        m_vehicleControl.setSpeed(1.5);
-                        m_vehicleControl.setSteeringWheelAngle(25);
+                        m_vehicleControl.setSpeed(1);
+                        m_vehicleControl.setSteeringWheelAngle(15);
 
                         stageToRightLaneRightTurn--;
                         if (stageToRightLaneRightTurn == 0) {
@@ -397,7 +397,7 @@ namespace automotive {
                     else if (stageMoving == TO_RIGHT_LANE_LEFT_TURN) {
                         // Move to the left lane: Turn left part.
                         m_vehicleControl.setSpeed(.9);
-                        m_vehicleControl.setSteeringWheelAngle(-25);
+                        m_vehicleControl.setSteeringWheelAngle(-10);
 
                         stageToRightLaneLeftTurn--;
                         if (stageToRightLaneLeftTurn == 0) {

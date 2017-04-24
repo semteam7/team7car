@@ -94,7 +94,7 @@ namespace automotive {
                     vc.setSpeed(2);
                     vc.setSteeringWheelAngle(0);
 
-                    stageToRightLaneLeftTurn = 0;
+                    stageToRightLaneLeftTurn = 15;
                     stageToRightLaneRightTurn = 0;
                 }
                 else if (stageMoving == TO_LEFT_LANE_LEFT_TURN) {
@@ -127,7 +127,7 @@ namespace automotive {
                 }
                 else if (stageMoving == TO_RIGHT_LANE_RIGHT_TURN) {
                     // Move to the right lane: Turn right part.
-                    vc.setSpeed(1.5);
+                    vc.setSpeed(1);
                     vc.setSteeringWheelAngle(25);
 
                     stageToRightLaneRightTurn--;
@@ -138,7 +138,7 @@ namespace automotive {
                 else if (stageMoving == TO_RIGHT_LANE_LEFT_TURN) {
                     // Move to the left lane: Turn left part.
                     vc.setSpeed(.9);
-                    vc.setSteeringWheelAngle(-25);
+                    vc.setSteeringWheelAngle(-15);
 
                     stageToRightLaneLeftTurn--;
                     if (stageToRightLaneLeftTurn == 0) {

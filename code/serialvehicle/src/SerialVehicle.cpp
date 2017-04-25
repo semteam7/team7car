@@ -21,9 +21,6 @@
 
 #include <iostream>
 
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-
 #include <opendavinci/odcore/base/Lock.h>
 #include <opendavinci/odcore/wrapper/SharedMemoryFactory.h>
 
@@ -55,31 +52,21 @@ using namespace odcore::wrapper;
 SerialVehicle::~SerialVehicle() {}
 
 void SerialVehicle::setUp() {
-    // Attach to serial port
-    // We are using OpenDaVINCI's std::shared_ptr to automatically
-    // release any acquired resources.
-//
-//    try {
-//        cout << "Connected to serial port ttyACM0" << endl;
-//    }
-//    catch(string &exception) {
-//        cerr << exception << endl;
-//        exit(0);
-//    }
-
+    m_serial = std::shared_ptr<SerialPort>(SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
+    m_serial->setStringListener(this);
+    //m_serial->start();
 }
 
 void SerialVehicle::tearDown() {
-    // Release serial port
+    //m_serial->stop();
+    m_serial->setStringListener(NULL);
 }
 
 void SerialVehicle::nextContainer(odcore::data::Container &c) {
-    m_serial = std::shared_ptr<SerialPort>(SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
-    m_serial->setStringListener(this);
-    m_serial->start();
 
     if (c.getDataType() == VehicleControl::ID()) {
             vc_count++;
+            cout << vc_count << endl;
             if(vc_count % 10 == 0)
             {
                 VehicleControl vc = c.getData<VehicleControl> ();
@@ -90,8 +77,6 @@ void SerialVehicle::nextContainer(odcore::data::Container &c) {
             }
         }
 
-    m_serial->stop();
-    m_serial->setStringListener(NULL);
 }
 
 void SerialVehicle::nextString(const string &s)

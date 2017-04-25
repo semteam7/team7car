@@ -69,7 +69,7 @@ using namespace odcore::wrapper;
     const string   SERIAL_PORT =  "/dev/ttyACM0";
     const uint32_t BAUD_RATE = 57600;
     std::shared_ptr<SerialPort> m_serial;
-//    VehicleControl vc_buffer[];
+//  VehicleControl vc_buffer[];
     int vc_count = 0;
 };
 }

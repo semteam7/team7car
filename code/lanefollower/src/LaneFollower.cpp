@@ -41,9 +41,8 @@ namespace automotive {
     namespace miniature {
 
   	
-		IplImage* greyImage; // gray image for the conversion of the original image
-    	IplImage* cannyImage;
-    	vector<cv::Vec4i> lines;
+		IplImage* greyImage; // grey image from original image
+    	IplImage* cannyImage; // Canny image from grey image
 
 
         using namespace std;
@@ -129,6 +128,13 @@ namespace automotive {
 
         void LaneFollower::canny(){
 
+          	// stringstream ss;
+           //  ss << "desiredSteering: " << desiredSteering * 53;
+           //  cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(110, 200, 140));
+
+
+
+
           greyImage = cvCreateImage( cvSize(m_image->width, m_image->height), IPL_DEPTH_8U, 1 );
      	  cvCvtColor( m_image, greyImage, CV_BGR2GRAY );
 
@@ -179,19 +185,19 @@ namespace automotive {
                 if (m_debug) {
                     if (left.x > 0) {
                     	CvScalar green = CV_RGB(0, 255, 0);
-                    	cvLine(cannyImage, cvPoint(cannyImage->width/2, y), left, green, 1, 8);
+                    	cvLine(m_image, cvPoint(m_image->width/2, y), left, green, 1, 8);
 
                         stringstream sstr;
-                        sstr << (cannyImage->width/2 - left.x);
-                    	cvPutText(cannyImage, sstr.str().c_str(), cvPoint(cannyImage->width/2 - 100, y - 2), &m_font, green);
+                        sstr << (m_image->width/2 - left.x);
+                    	cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 - 100, y - 2), &m_font, green);
                     }
                     if (right.x > 0) {
                     	CvScalar red = CV_RGB(255, 0, 0);
-                    	cvLine(cannyImage, cvPoint(cannyImage->width/2, y), right, red, 1, 8);
+                    	cvLine(m_image, cvPoint(m_image->width/2, y), right, red, 1, 8);
 
                         stringstream sstr;
-                        sstr << (right.x - cannyImage->width/2);
-                    	cvPutText(cannyImage, sstr.str().c_str(), cvPoint(cannyImage->width/2 + 100, y - 2), &m_font, red);
+                        sstr << (right.x - m_image->width/2);
+                    	cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 + 100, y - 2), &m_font, red);
                     }
                 }
 
@@ -228,13 +234,7 @@ namespace automotive {
             TimeStamp afterImageProcessing;
             cerr << "Processing time: " << (afterImageProcessing.toMicroseconds() - beforeImageProcessing.toMicroseconds())/1000.0 << "ms." << endl;
 
-            // Show resulting features.
-            if (m_debug) {
-                if (m_image != NULL) {
-                    cvShowImage("WindowShowImage", cannyImage); // original: m_image
-                    cvWaitKey(33);
-                }
-            }
+    
 
             TimeStamp currentTime;
             double timeStep = (currentTime.toMicroseconds() - m_previousTime.toMicroseconds()) / (1000.0 * 1000.0);
@@ -262,6 +262,7 @@ namespace automotive {
 
             const double y = p + i + d;
             double desiredSteering = 0;
+
             if (fabs(e) > 1e-2) {
                 desiredSteering = y;
 
@@ -275,9 +276,26 @@ namespace automotive {
             cerr << "PID: " << "e = " << e << ", eSum = " << m_eSum << ", desiredSteering = " << desiredSteering << ", y = " << y << endl;
 
 
+
             // Go forward.
             m_vehicleControl.setSpeed(2);
             m_vehicleControl.setSteeringWheelAngle(desiredSteering);
+
+
+            // Print DesiredSteering
+            stringstream ss;
+            ss << "desiredSteering: " << desiredSteering * 53;
+            cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(0, 0, 200));
+
+
+
+                    // Show resulting features.
+            if (m_debug) {
+                if (m_image != NULL) {
+                    cvShowImage("WindowShowImage", m_image); // original: m_image
+                    cvWaitKey(33);
+                }
+            }
         }
 
         // This method will do the main data processing job.
@@ -291,7 +309,7 @@ namespace automotive {
             const double hscale = 0.4;
             const double vscale = 0.3;
             const double shear = 0.2;
-            const int thickness = 10;
+            const int thickness = 1;
             const int lineType = 6;
 
             cvInitFont(&m_font, CV_FONT_HERSHEY_DUPLEX, hscale, vscale, shear, thickness, lineType);

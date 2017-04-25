@@ -58,14 +58,14 @@ void SerialVehicle::setUp() {
     // Attach to serial port
     // We are using OpenDaVINCI's std::shared_ptr to automatically
     // release any acquired resources.
-
-    try {
-        cout << "Connected to serial port ttyACM0" << endl;
-    }
-    catch(string &exception) {
-        cerr << exception << endl;
-        exit(0);
-    }
+//
+//    try {
+//        cout << "Connected to serial port ttyACM0" << endl;
+//    }
+//    catch(string &exception) {
+//        cerr << exception << endl;
+//        exit(0);
+//    }
 
 }
 

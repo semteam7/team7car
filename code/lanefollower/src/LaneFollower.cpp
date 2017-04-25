@@ -128,13 +128,6 @@ namespace automotive {
 
         void LaneFollower::canny(){
 
-          	// stringstream ss;
-           //  ss << "desiredSteering: " << desiredSteering * 53;
-           //  cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(110, 200, 140));
-
-
-
-
           greyImage = cvCreateImage( cvSize(m_image->width, m_image->height), IPL_DEPTH_8U, 1 );
      	  cvCvtColor( m_image, greyImage, CV_BGR2GRAY );
 
@@ -264,7 +257,7 @@ namespace automotive {
             double desiredSteering = 0;
 
             if (fabs(e) > 1e-2) {
-                desiredSteering = y;
+                desiredSteering = y * 57.3;
 
                 if (desiredSteering > 25.0) {
                     desiredSteering = 25.0;
@@ -284,7 +277,7 @@ namespace automotive {
 
             // Print DesiredSteering
             stringstream ss;
-            ss << "desiredSteering: " << desiredSteering * 53;
+            ss << "desiredSteering: " << desiredSteering;
             cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(0, 0, 200));
 
 

@@ -58,32 +58,33 @@ void setup() {
   Serial.println("check me out");
 
 
-  scaledcars_VehicleCommand vc = scaledcars_VehicleCommand_init_zero;
-  
-  vc.speed = test;
-  vc.acceleration = test;
-  
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-  state = pb_encode(&stream, scaledcars_VehicleCommand_fields, &vc);
+//  scaledcars_VehicleCommand vc = scaledcars_VehicleCommand_init_zero;
+//  
+//  vc.speed = test;
+//  vc.acceleration = test;
+//  
+//  pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+//  state = pb_encode(&stream, scaledcars_VehicleCommand_fields, &vc);
+//
+//  message_length = stream.bytes_written;
+//
+//
+//  Serial.print("speed ");
+//  Serial.println(double_to_float(vc.speed));
+//
+//  Serial.print("message length ");
+//  Serial.println(message_length);
+//  Serial.write(buffer, 100);
 
-  message_length = stream.bytes_written;
-
-
-  Serial.print("speed ");
-  Serial.println(double_to_float(vc.speed));
-
-  Serial.print("message length ");
-  Serial.println(message_length);
-  Serial.write(buffer, 100);
-
-  if (!state)
-  {
-      Serial.print("Encoding failed: %s\n");
-      Serial.println(PB_GET_ERROR(&stream));
-      
-  }
+//  if (!state)
+//  {
+//      Serial.print("Encoding failed: %s\n");
+//      Serial.println(PB_GET_ERROR(&stream));
+//      
+//  }
   
   esc.attach(ESC_PIN);
+  esc.write(90);
   steering.attach(SERVO_CONTROL_PIN);
 }
 
@@ -107,38 +108,52 @@ void readFromSerial() {
   if(Serial.available())
   {
     command = Serial.readStringUntil('\n');
-    Serial.println("Received control message: " + command);
+    //Serial.println("Received control message: " + command);
     int colonIndex = command.indexOf(';');
     
     carSpeed = command.substring(0,colonIndex).toFloat();
     carAngle = command.substring(colonIndex + 1,command.length()).toFloat();
 
-     if (carAngle > 1.5){
-      carAngle =  1.5; 
-    }
-    else if (carAngle < -1.5){
-      carAngle = (-1.5);
-    }
+   //  if (carAngle > 1.5){
+     // carAngle =  1.5; 
+    //}
+    //else if (carAngle < -1.5){
+      //carAngle = (-1.5);
+    //}
     
-     carAngle = (carAngle * 57.3)  + 90;z
+    // carAngle = (carAngle * 57.3)  + 90;
+    
+     if (carSpeed < 2 && carSpeed > 0){
+      carSpeed = 98.999;
+    }
+    else {
+     carSpeed = (carSpeed * 4.5) + 90;
+     if (carSpeed > 99.00){
+      carSpeed = 99.00;
+      //received++;
+      } 
+    }
+     carAngle = (4.28 * carAngle) + 90;
 
-//     carSpeed = (carSpeed * 4.5) + 90;
-//     if (carSpeed > 99.1){
-//      carSpeed = 99.1;
-//      received++;
-//    }
-//    if (carAngle > 135){
-//      carAngle = 135;
-//    }
-//    if (carAngle < 45){
-//      carAngle = 45;
-//    }
+     if (carAngle > 130) {
+      carAngle = 130;
+     }
+     else if (carAngle < 50){
+      carAngle = 50;
+     }
+    //if (carAngle > 155){
+      //carAngle = 155;
+    //}
+    //if (carAngle < 35){
+     // carAngle = 35;
+      //}
 
      //carAngle = ((carAngle - (-6.2)) / (6.2 - (-6.2))) * (135-45) + 40; 
     
    // Serial.println(carAngle);
     
     if (received == 10){
+      Serial.println("done 10 times");
        if (carSpeed < 99 && carSpeed > 90){
            updateSpeed(102);
             received = 0;
@@ -146,10 +161,10 @@ void readFromSerial() {
       }
     }
     
-    Serial.print("A");
-    Serial.print(carAngle);
-    Serial.print("S");
-    Serial.println(carSpeed);
+//    Serial.print("A ");
+//    Serial.println(carAngle);
+//    Serial.print("S ");
+//    Serial.println(carSpeed);
 
     updateSpeed(carSpeed);
     setAngle(carAngle);

@@ -120,7 +120,7 @@ void readFromSerial() {
       carAngle = (-1.5);
     }
     
-     carAngle = (carAngle * 57.3)  + 90;
+     carAngle = (carAngle * 57.3)  + 90;z
 
 //     carSpeed = (carSpeed * 4.5) + 90;
 //     if (carSpeed > 99.1){

@@ -17,9 +17,11 @@ int IR_3 = 2;
 int US_1;
 int US_2;
 
-int STEERING_STRAIGHT = 135;
-int STEERING_FULL_LEFT = 90;
-int STEERING_FULL_RIGHT = 180;
+int received = 0;
+
+int STEERING_STRAIGHT = 90;
+int STEERING_FULL_LEFT = 45 ;
+int STEERING_FULL_RIGHT = 135;
 int SPEED_INPUT;
 int STEERING_INPUT;
 
@@ -59,31 +61,50 @@ void readFromSerial() {
   String command;
   float carSpeed;
   float carAngle;
-  if(Serial.available() > 0)
+  
+  if(Serial.available())
   {
     command = Serial.readStringUntil('\n');
+    Serial.println(" liturulurulruly");
     //Serial.println("Received control message: " + command);
     int colonIndex = command.indexOf(';');
     carSpeed = command.substring(0,colonIndex).toFloat();
     carAngle = command.substring(colonIndex + 1,command.length()).toFloat();
 
      carSpeed = (carSpeed * 4.5) + 90;
-     if (carSpeed > 98.9){
-      carSpeed = 98.9;
+     if (carSpeed > 99.1){
+      carSpeed = 99.1;
     }
-    carAngle = (carAngle * 52.30) + 90;
-    if (carAngle > 155){
-      carAngle = 155;
+   // if (carAngle > 1.5){
+     // carAngle =  1.5; 
+    //}
+
+    //else if (carAngle < -1.5){
+      //carAngle = (-1.5);
+    //}
+    //Serial.print("Before Calculation ");
+    //Serial.println(carAngle);
+   // carAngle = (carAngle * 57.3)  + 90;
+
+    if (carAngle > 135){
+      carAngle = 135;
     }
-    else if (carAngle < 35){
-      carAngle = 35;
+    if (carAngle < 45){
+      carAngle = 45;
     }
+    //carAngle = ((carAngle - (-6.2)) / (6.2 - (-6.2))) * (135-45) + 40; 
     
-    //Serial.println(carSpeed);
-    if (carSpeed < 99 && carSpeed > 90){
+   // Serial.println(carAngle);
+    
+    received++;
+    if (received == 10){
+       if (carSpeed < 99 && carSpeed > 90){
       updateSpeed(102);
+      received = 0;
+      }
     }
     delay(300);
+    
     updateSpeed(carSpeed);
     setAngle(carAngle);
   }

@@ -84,7 +84,7 @@ void setup() {
   esc.attach(ESC_PIN);
   steering.attach(SERVO_CONTROL_PIN);
 
-  Serial.begin(57600);
+
 }
 
 void testSteering(){
@@ -108,35 +108,47 @@ void readFromSerial() {
     
   }
   String command;
-  float carSpeed;
-  float carAngle;
   if(Serial.available() > 0)
   {
     command = Serial.readStringUntil('\n');
+<<<<<<< HEAD
+    Serial.println("Received control message: " + command);
+=======
     //Serial.println("Received control message: " + command);
     int colonIndex = command.indexOf(';');
     carSpeed = command.substring(0,colonIndex).toFloat();
     carAngle = command.substring(colonIndex + 1,command.length()).toFloat();
 
-     carSpeed = (carSpeed * 10) + 90;
-     if (carSpeed > 100){
-      carSpeed = 100;
+     carSpeed = (carSpeed * 4.5) + 90;
+     if (carSpeed > 98.9){
+      carSpeed = 98.9;
     }
-    carAngle += 90;
+    carAngle = (carAngle * 52.30) + 90;
+    if (carAngle > 155){
+      carAngle = 155;
+    }
+    else if (carAngle < 35){
+      carAngle = 35;
+    }
     
-    Serial.println(carSpeed);
+    //Serial.println(carSpeed);
+    if (carSpeed < 99 && carSpeed > 90){
+      updateSpeed(102);
+    }
+    delay(300);
     updateSpeed(carSpeed);
     setAngle(carAngle);
+>>>>>>> e0799fcf5e331b4283ffae7a006fe82936ceefbc
   }
 
 }
 
-void updateSpeed(float inSpeed) {
+void updateSpeed(int inSpeed) {
   esc.write(inSpeed);
-  //Serial.println("Speed set to " + inSpeed);
+  Serial.println("Speed set to " + inSpeed);
 }
 
-void setAngle(float inAngle) {
+void setAngle(int inAngle) {
   steering.write(inAngle);
-  //Serial.println("Angle set to " + inAngle);
+  Serial.println("Angle set to " + inAngle);
 }

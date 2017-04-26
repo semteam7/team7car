@@ -32,9 +32,11 @@
 
 #include <opendavinci/odcore/wrapper/SerialPort.h>
 #include <opendavinci/odcore/wrapper/SerialPortFactory.h>
+#include <chrono>
 
+#include "SerialHandler.h"
 
-#define BUFFER_LENGTH 10
+#define CONNECTION_DELAY 1000
 
 namespace scaledcars {
 namespace team7 {
@@ -44,9 +46,7 @@ using namespace odcore;
 using namespace odcore::wrapper;
 
 
-    class SerialVehicle
-            : public odcore::base::module::DataTriggeredConferenceClientModule,
-              public odcore::io::StringListener {
+    class SerialVehicle : public odcore::base::module::DataTriggeredConferenceClientModule{
    private:
     SerialVehicle(const SerialVehicle & /*obj*/) = delete;
     SerialVehicle &operator=(const SerialVehicle & /*obj*/) = delete;
@@ -66,11 +66,14 @@ using namespace odcore::wrapper;
    private:
     void setUp();
     void tearDown();
+    void reconnect();
     const string   SERIAL_PORT =  "/dev/ttyACM0";
     const uint32_t BAUD_RATE = 57600;
     std::shared_ptr<SerialPort> m_serial;
 //  VehicleControl vc_buffer[];
+    SerialHandler m_serialHandler;
     int vc_count = 0;
+    const chrono::time_point<chrono::system_clock> m_connected_at;
 };
 }
 } // scaledcars::perception

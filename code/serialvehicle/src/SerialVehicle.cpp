@@ -34,6 +34,7 @@
 #include <opendavinci/odcore/wrapper/SerialPortFactory.h>
 
 #include "SerialVehicle.h"
+#include "SerialHandler.h"
 
 namespace scaledcars {
 namespace team7 {
@@ -48,23 +49,25 @@ using namespace odcore;
 using namespace odcore::wrapper;
 
     SerialVehicle::SerialVehicle(const int &argc, char **argv)
-    : DataTriggeredConferenceClientModule(argc, argv, "serialvehicle") {}
+            : DataTriggeredConferenceClientModule(argc, argv, "serialvehicle"),
+              m_serial(SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE)),
+              m_serialHandler(),
+              m_connected_at(chrono::system_clock::now()){}
+
 SerialVehicle::~SerialVehicle() {}
 
 void SerialVehicle::setUp() {
-    m_serial = std::shared_ptr<SerialPort>(SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
-    m_serial->setStringListener(this);
-    //m_serial->start();
+    m_serial->setStringListener(&m_serialHandler);
+    m_serial->start();
 }
 
 void SerialVehicle::tearDown() {
-    //m_serial->stop();
+    m_serial->stop();
     m_serial->setStringListener(NULL);
 }
 
 void SerialVehicle::nextContainer(odcore::data::Container &c) {
-
-    if (c.getDataType() == VehicleControl::ID()) {
+    if (c.getDataType() == VehicleControl::ID()  ) {
             vc_count++;
             cout << vc_count << endl;
             if(vc_count % 10 == 0)
@@ -77,6 +80,14 @@ void SerialVehicle::nextContainer(odcore::data::Container &c) {
             }
         }
 
+}
+
+void SerialVehicle::reconnect()
+{
+    m_serial.reset(SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
+
+    m_serial->setStringListener(&m_serialHandler);
+    m_serial->start();
 }
 
 void SerialVehicle::nextString(const string &s)

@@ -67,14 +67,18 @@ void SerialVehicle::tearDown() {
 }
 
 void SerialVehicle::nextContainer(odcore::data::Container &c) {
-    if (c.getDataType() == VehicleControl::ID()  ) {
+    cout << "next container" << endl;
+    if (c.getDataType() == VehicleControl::ID()) {
             vc_count++;
-            cout << vc_count << endl;
+            cout << "Message count: " <<vc_count << endl;
             if(vc_count % 10 == 0)
             {
                 VehicleControl vc = c.getData<VehicleControl> ();
 
-                string command = std::to_string(vc.getSpeed())+ ";" + std::to_string(vc.getSteeringWheelAngle()) + "\r\n";
+                stringstream cs;
+                cs << setprecision(2) << vc.getSpeed() << ";" << vc.getSteeringWheelAngle() << "\r\n";
+                string command = cs.str();
+
                 m_serial->send(command);
                 cout << "Sent command: " << command;
             }

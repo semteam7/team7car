@@ -1,15 +1,8 @@
 #include <Servo.h>
-
-extern "C" {
-  #include "pb_encode.h"
-  #include "pb_decode.h"
-  #include "double_conversion.h" 
-  #include "vehiclecontrol.pb.h"
-}
-
-#include "pb_arduino_encode.h"
-#include "pb_arduino_decode.h"
-
+#include "pb_encode.h"
+#include "pb_decode.h"
+#include "double_conversion.h"
+#include "vehiclecontrol.pb.h"
 
 //Digital
 int SERVO_CONTROL_PIN = 6;
@@ -49,42 +42,26 @@ Servo esc, steering;
 void setup() {
   pinMode(ESC_PIN, OUTPUT);
   pinMode(SERVO_CONTROL_PIN, OUTPUT);
-  Serial.begin(57600);
-
-  uint64_t test = float_to_double(50.0);
-
-  Serial.println("check me out");
-
+    Serial.begin(57600);
 
   scaledcars_VehicleCommand vc = scaledcars_VehicleCommand_init_zero;
+  uint64_t test = double_to_float(500000);
   
-  vc.speed = test;
-  vc.acceleration = test;
-  
+  Serial.println("check me out");
+
   pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
   state = pb_encode(&stream, scaledcars_VehicleCommand_fields, &vc);
 
   message_length = stream.bytes_written;
 
-
-  Serial.print("speed ");
-  Serial.println(double_to_float(vc.speed));
-
   Serial.print("message length ");
   Serial.println(message_length);
-  Serial.write(buffer, 100);
-
-  if (!state)
-  {
-      Serial.print("Encoding failed: %s\n");
-      Serial.println(PB_GET_ERROR(&stream));
-      
-  }
+  Serial.write(buffer, message_length);
   
   esc.attach(ESC_PIN);
   steering.attach(SERVO_CONTROL_PIN);
 
-  Serial.begin(57600);
+
 }
 
 void testSteering(){
@@ -108,35 +85,20 @@ void readFromSerial() {
     
   }
   String command;
-  float carSpeed;
-  float carAngle;
   if(Serial.available() > 0)
   {
     command = Serial.readStringUntil('\n');
-    //Serial.println("Received control message: " + command);
-    int colonIndex = command.indexOf(';');
-    carSpeed = command.substring(0,colonIndex).toFloat();
-    carAngle = command.substring(colonIndex + 1,command.length()).toFloat();
-
-     carSpeed = (carSpeed * 10) + 90;
-     if (carSpeed > 100){
-      carSpeed = 100;
-    }
-    carAngle += 90;
-    
-    Serial.println(carSpeed);
-    updateSpeed(carSpeed);
-    setAngle(carAngle);
+    Serial.println("Received control message: " + command);
   }
 
 }
 
-void updateSpeed(float inSpeed) {
+void updateSpeed(int inSpeed) {
   esc.write(inSpeed);
-  //Serial.println("Speed set to " + inSpeed);
+  Serial.println("Speed set to " + inSpeed);
 }
 
-void setAngle(float inAngle) {
+void setAngle(int inAngle) {
   steering.write(inAngle);
-  //Serial.println("Angle set to " + inAngle);
+  Serial.println("Angle set to " + inAngle);
 }

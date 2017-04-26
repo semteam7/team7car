@@ -257,7 +257,7 @@ namespace automotive {
             double desiredSteering = 0;
 
             if (fabs(e) > 1e-2) {
-                desiredSteering = y * 57.3;
+                desiredSteering = y;
 
                 if (desiredSteering > 25.0) {
                     desiredSteering = 25.0;

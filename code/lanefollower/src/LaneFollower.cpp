@@ -257,13 +257,13 @@ namespace automotive {
             double desiredSteering = 0;
 
             if (fabs(e) > 1e-2) {
-                desiredSteering = y * 57.3;
+                desiredSteering = y;
 
-                if (desiredSteering > 25.0 * 57.3) {
-                    desiredSteering = 25.0 * 57.3;
+                if (desiredSteering > 25.0) {
+                    desiredSteering = 25.0;
                 }
-                if (desiredSteering < -25.0 * 57.3) {
-                    desiredSteering = -25.0 * 57.3;
+                if (desiredSteering < -25.0) {
+                    desiredSteering = -25.0;
                 }
             }
             cerr << "PID: " << "e = " << e << ", eSum = " << m_eSum << ", desiredSteering = " << desiredSteering << ", y = " << y << endl;

@@ -1,10 +1,13 @@
 #include <Servo.h>
+#include <stdio.h>
 
 extern "C" {
   #include "pb_encode.h"
   #include "pb_decode.h"
   #include "double_conversion.h" 
   #include "vehiclecontrol.pb.h"
+  #include "usdata.pb.h"
+  #include "irdata.pb.h"
 }
 
 #include "pb_arduino_encode.h"
@@ -42,50 +45,42 @@ byte receivedBytes[SERIAL_BUFFER];
 
 boolean newData = false;
 
-uint8_t buffer[128];
-size_t message_length;
-bool state;
+
+
+
+
 
 Servo esc, steering;
 
 void setup() {
   pinMode(ESC_PIN, OUTPUT);
   pinMode(SERVO_CONTROL_PIN, OUTPUT);
-  Serial.begin(57600);
-
-  uint64_t test = float_to_double(50.0);
-
-  Serial.println("check me out");
-
-
-  scaledcars_VehicleCommand vc = scaledcars_VehicleCommand_init_zero;
-  
-  vc.speed = test;
-  vc.acceleration = test;
-  
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-  state = pb_encode(&stream, scaledcars_VehicleCommand_fields, &vc);
-
-  message_length = stream.bytes_written;
-
-
-  Serial.print("speed ");
-  Serial.println(double_to_float(vc.speed));
-
-  Serial.print("message length ");
-  Serial.println(message_length);
-  Serial.write(buffer, 100);
-
-  if (!state)
-  {
-      Serial.print("Encoding failed: %s\n");
-      Serial.println(PB_GET_ERROR(&stream));
-      
-  }
-  
   esc.attach(ESC_PIN);
   steering.attach(SERVO_CONTROL_PIN);
+   
+   
+  initSerial();
+  delay(1000);
+  
+
 }
+
+//Serial init
+uint8_t send_buffer[66];
+pb_ostream_t send_ostream;
+
+void initSerial()
+{
+  Serial.begin(57600);
+  send_ostream = pb_ostream_from_buffer(send_buffer, sizeof(send_buffer));
+}
+
+void sendSerial()
+{
+  Serial.write(send_buffer, send_ostream.bytes_written);
+  send_ostream = pb_ostream_from_buffer(send_buffer, sizeof(send_buffer)); //reset send_ostream
+}
+
 
 void testSteering(){
   setAngle(STEERING_FULL_RIGHT);
@@ -95,8 +90,17 @@ void testSteering(){
 int rcThrottleValue, rcSteeringValue;
 bool safetyStop = false;
 
+
+
 void loop() {
   readFromSerial();
+
+  sendIrData(2, 10);
+  sendUsData(4, 5);
+
+  sendSerial();
+
+  delay(100);
 }
 
 
@@ -120,7 +124,7 @@ void readFromSerial() {
       carAngle = (-1.5);
     }
     
-     carAngle = (carAngle * 57.3)  + 90;z
+     carAngle = (carAngle * 57.3)  + 90;
 
 //     carSpeed = (carSpeed * 4.5) + 90;
 //     if (carSpeed > 99.1){
@@ -166,3 +170,49 @@ void setAngle(float inAngle) {
   steering.write(inAngle);
   //Serial.println("Angle set to " + inAngle);
 }
+
+uint8_t pbuffer[50];
+
+void sendProtobufMessage(){
+  
+//  
+//  size_t message_length;
+//  bool state;
+//  
+//  scaledcars_VehicleCommand vc = scaledcars_VehicleCommand_init_default;
+//
+//  vc.speed = test;
+//  vc.has_speed = true;
+// 
+//  pb_ostream_t stream = pb_ostream_from_buffer(pbuffer, sizeof(pbuffer));
+//  state = pb_encode(&stream, scaledcars_VehicleCommand_fields, &vc);
+//
+//  if (!state)
+//  {
+//    Serial.print("Encoding failed: %s\n");
+//    Serial.println(PB_GET_ERROR(&stream));
+//    
+//  }
+//  // bool pb_get_encoded_size(size_t *size, const pb_field_t fields[], const void *src_struct);
+//  Serial.write(buffer, stream.bytes_written);
+}
+
+void sendIrData(int sensor_id, int reading){
+  scaledcars_IRData ird = scaledcars_IRData_init_zero;
+  ird.has_sensor_id = true;
+  ird.sensor_id = sensor_id;
+  ird.has_reading = true;
+  ird.reading = reading;
+  pb_encode(&send_ostream, scaledcars_IRData_fields, &ird);
+}
+
+void sendUsData(int sensor_id, int reading){
+  scaledcars_USData usd = scaledcars_USData_init_zero;
+  usd.has_sensor_id = true;
+  usd.sensor_id = sensor_id;
+  usd.has_reading = true;
+  usd.reading = reading;
+  pb_encode(&send_ostream, scaledcars_USData_fields, &usd);
+}
+
+

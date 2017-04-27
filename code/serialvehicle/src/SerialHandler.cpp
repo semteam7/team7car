@@ -19,7 +19,7 @@ namespace team7 {
     SerialHandler::SerialHandler(){}
 
     void SerialHandler::nextString(const string &s){
-        cout << s << endl;
+        cout << "Received : " << s.size() << "'" << s << "'" << endl;
     }
 }
 }

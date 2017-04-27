@@ -88,9 +88,11 @@ namespace automotive {
                 bool m_debug;
                 CvFont m_font;
 
+
                 odcore::data::TimeStamp m_previousTime;
                 double m_eSum;
                 double m_eOld;
+                int m_messagecount;
 
                 automotive::VehicleControl m_vehicleControl;
 

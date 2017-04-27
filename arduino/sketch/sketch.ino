@@ -56,12 +56,13 @@ void setup() {
   pinMode(ESC_PIN, OUTPUT);
   pinMode(SERVO_CONTROL_PIN, OUTPUT);
   esc.attach(ESC_PIN);
+  esc.write(90);
   steering.attach(SERVO_CONTROL_PIN);
-   
-   
+
+
   initSerial();
   delay(1000);
-  
+
 
 }
 
@@ -111,18 +112,18 @@ void readFromSerial() {
   if(Serial.available())
   {
     command = Serial.readStringUntil('\n');
-    Serial.println("Received control message: " + command);
+    //Serial.println("Received control message: " + command);
     int colonIndex = command.indexOf(';');
     
     carSpeed = command.substring(0,colonIndex).toFloat();
     carAngle = command.substring(colonIndex + 1,command.length()).toFloat();
 
-     if (carAngle > 1.5){
-      carAngle =  1.5; 
-    }
-    else if (carAngle < -1.5){
-      carAngle = (-1.5);
-    }
+   //  if (carAngle > 1.5){
+     // carAngle =  1.5;
+    //}
+    //else if (carAngle < -1.5){
+      //carAngle = (-1.5);
+    //}
     
      carAngle = (carAngle * 57.3)  + 90;
 
@@ -137,12 +138,39 @@ void readFromSerial() {
 //    if (carAngle < 45){
 //      carAngle = 45;
 //    }
+    // carAngle = (carAngle * 57.3)  + 90;
+
+     if (carSpeed < 2 && carSpeed > 0){
+      carSpeed = 98.999;
+    }
+    else {
+     carSpeed = (carSpeed * 4.5) + 90;
+     if (carSpeed > 99.00){
+      carSpeed = 99.00;
+      //received++;
+      }
+    }
+     carAngle = (4.28 * carAngle) + 90;
+
+     if (carAngle > 130) {
+      carAngle = 130;
+     }
+     else if (carAngle < 50){
+      carAngle = 50;
+     }
+    //if (carAngle > 155){
+      //carAngle = 155;
+    //}
+    //if (carAngle < 35){
+     // carAngle = 35;
+      //}
 
      //carAngle = ((carAngle - (-6.2)) / (6.2 - (-6.2))) * (135-45) + 40; 
     
    // Serial.println(carAngle);
     
     if (received == 10){
+      Serial.println("done 10 times");
        if (carSpeed < 99 && carSpeed > 90){
            updateSpeed(102);
             received = 0;
@@ -174,16 +202,16 @@ void setAngle(float inAngle) {
 uint8_t pbuffer[50];
 
 void sendProtobufMessage(){
-  
-//  
+
+//
 //  size_t message_length;
 //  bool state;
-//  
+//
 //  scaledcars_VehicleCommand vc = scaledcars_VehicleCommand_init_default;
 //
 //  vc.speed = test;
 //  vc.has_speed = true;
-// 
+//
 //  pb_ostream_t stream = pb_ostream_from_buffer(pbuffer, sizeof(pbuffer));
 //  state = pb_encode(&stream, scaledcars_VehicleCommand_fields, &vc);
 //
@@ -191,7 +219,7 @@ void sendProtobufMessage(){
 //  {
 //    Serial.print("Encoding failed: %s\n");
 //    Serial.println(PB_GET_ERROR(&stream));
-//    
+//
 //  }
 //  // bool pb_get_encoded_size(size_t *size, const pb_field_t fields[], const void *src_struct);
 //  Serial.write(buffer, stream.bytes_written);

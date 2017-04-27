@@ -61,6 +61,7 @@ namespace automotive {
             m_previousTime(),
             m_eSum(0),
             m_eOld(0),
+            m_messagecount(0),
             m_vehicleControl() {}
 
         LaneFollower::~LaneFollower() {}
@@ -78,10 +79,14 @@ namespace automotive {
 	        // This method will be call automatically _after_ return from body().
 	        if (m_image != NULL) {
 		        cvReleaseImage(&m_image);
+                cvReleaseImage(&cannyImage);
+
 	        }
 
 	        if (m_debug) {
-		        cvDestroyWindow("WindowShowImage");
+		        cvDestroyWindow("Original");
+                cvDestroyWindow("Canny");
+
 	        }
         }
 
@@ -132,14 +137,18 @@ namespace automotive {
      	  cvCvtColor( m_image, greyImage, CV_BGR2GRAY );
 
          cannyImage = cvCreateImage(cvGetSize(m_image), IPL_DEPTH_8U, 1);
+                                                    
+                                                   //5  5
+        cvSmooth(greyImage, cannyImage, CV_GAUSSIAN, 5, 5);
 
-        							 //50, 150, 3
-        cvCanny(greyImage, cannyImage, 50, 150, 3);
+        							   //50, 150, 3
+         cvCanny(cannyImage, cannyImage, 50, 150, 3);
 
         }
 
 
         void LaneFollower::processImage() {
+
             static bool useRightLaneMarking = true;
             double e = 0;
 
@@ -244,9 +253,17 @@ namespace automotive {
 //            const double Kd = 0;
 
             // The following values have been determined by Twiddle algorithm.
-            const double Kp = 1.29;
-            const double Ki = 0.01;
-            const double Kd = 0.1;
+            m_messagecount++;
+            cout << "MESSAGE COUNTER = " << m_messagecount << endl;        
+
+            double Kp = 0;
+            const double Ki = 0.;
+            const double Kd = 0;
+
+            if (m_messagecount % 500 == 0) {
+                Kp = Kp + 0.1;
+                cout << "Kp = " << Kp << endl;
+            }
 
             const double p = Kp * e;
             const double i = Ki * timeStep * m_eSum;
@@ -277,7 +294,7 @@ namespace automotive {
 
             // Print DesiredSteering
             stringstream ss;
-            ss << "desiredSteering: " << desiredSteering;
+            ss << "desiredSteering: " << desiredSteering << "Kp: " << Kp;
             cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(0, 0, 200));
 
 
@@ -285,7 +302,9 @@ namespace automotive {
                     // Show resulting features.
             if (m_debug) {
                 if (m_image != NULL) {
-                    cvShowImage("WindowShowImage", m_image); // original: m_image
+                    cvShowImage("Original", m_image); // original: m_image
+                    cvWaitKey(33);
+                    cvShowImage("Canny", cannyImage); // original: m_image
                     cvWaitKey(33);
                 }
             }

@@ -79,10 +79,14 @@ namespace automotive {
 	        // This method will be call automatically _after_ return from body().
 	        if (m_image != NULL) {
 		        cvReleaseImage(&m_image);
+                cvReleaseImage(&cannyImage);
+
 	        }
 
 	        if (m_debug) {
-		        cvDestroyWindow("WindowShowImage");
+		        cvDestroyWindow("Original");
+                cvDestroyWindow("Canny");
+
 	        }
         }
 
@@ -133,9 +137,12 @@ namespace automotive {
      	  cvCvtColor( m_image, greyImage, CV_BGR2GRAY );
 
          cannyImage = cvCreateImage(cvGetSize(m_image), IPL_DEPTH_8U, 1);
+                                                    
+                                                   //5  5
+        cvSmooth(greyImage, cannyImage, CV_GAUSSIAN, 5, 5);
 
-        							 //50, 150, 3
-        cvCanny(greyImage, cannyImage, 50, 150, 3);
+        							   //50, 150, 3
+         cvCanny(cannyImage, cannyImage, 50, 150, 3);
 
         }
 
@@ -295,7 +302,9 @@ namespace automotive {
                     // Show resulting features.
             if (m_debug) {
                 if (m_image != NULL) {
-                    cvShowImage("WindowShowImage", m_image); // original: m_image
+                    cvShowImage("Original", m_image); // original: m_image
+                    cvWaitKey(33);
+                    cvShowImage("Canny", cannyImage); // original: m_image
                     cvWaitKey(33);
                 }
             }

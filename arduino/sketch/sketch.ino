@@ -124,12 +124,12 @@ void readFromSerial() {
     // carAngle = (carAngle * 57.3)  + 90;
     
      if (carSpeed < 2 && carSpeed > 0){
-      carSpeed = 98.999;
+      carSpeed = 99;
     }
     else {
      carSpeed = (carSpeed * 4.5) + 90;
-     if (carSpeed > 99.00){
-      carSpeed = 99.00;
+     if (carSpeed > 99){
+      carSpeed = 99;
       //received++;
       } 
     }
@@ -160,7 +160,14 @@ void readFromSerial() {
             delay(300);
       }
     }
-    
+
+//    while (carSpeed != 0){
+//      updateSpeed(100);
+//      delay(100);
+//      updateSpeed(90);
+//      delay(200);
+//      setAngle(carAngle);
+//    }
 //    Serial.print("A ");
 //    Serial.println(carAngle);
 //    Serial.print("S ");

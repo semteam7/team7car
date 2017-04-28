@@ -68,7 +68,7 @@ using namespace odcore::wrapper;
     void tearDown();
     void reconnect();
     const string   SERIAL_PORT =  "/dev/ttyACM0";
-    const uint32_t BAUD_RATE = 57600;
+    const uint32_t BAUD_RATE = 115200;
     std::shared_ptr<SerialPort> m_serial;
 //  VehicleControl vc_buffer[];
     SerialHandler m_serialHandler;

@@ -19,8 +19,8 @@
 # GLOBAL CONFIGURATION
 #
 global.car = file://Car1.objx
-#global.scenario = file://SEM_Test_Track-overtaking.scnx
-global.scenario = file://Example1.scnx
+global.scenario = file://SEM_Test_Track-overtaking.scnx
+#global.scenario = file://Example1.scnx
 #global.scenario = file://Parking-boxes-1.scnx
 global.showGrid = 0
 

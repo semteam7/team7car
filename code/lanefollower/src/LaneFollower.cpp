@@ -332,7 +332,7 @@ namespace automotive {
 
             // State counter for dynamically moving back to right lane.
             int32_t stageToRightLaneRightTurn = 0;
-            int32_t stageToRightLaneLeftTurn = 0;
+            int32_t stageToRightLaneLeftTurn = 15;
 
             // Distance variables to ensure we are overtaking only stationary or slowly driving obstacles.
             double distanceToObstacle = 0;
@@ -404,8 +404,8 @@ namespace automotive {
                     }
                     else if (stageMoving == TO_RIGHT_LANE_RIGHT_TURN) {
                         // Move to the right lane: Turn right part.
-                        m_vehicleControl.setSpeed(1);
-                        m_vehicleControl.setSteeringWheelAngle(15);
+                        m_vehicleControl.setSpeed(1.5);
+                        m_vehicleControl.setSteeringWheelAngle(25);
 
                         stageToRightLaneRightTurn--;
                         if (stageToRightLaneRightTurn == 0) {
@@ -415,11 +415,15 @@ namespace automotive {
                     else if (stageMoving == TO_RIGHT_LANE_LEFT_TURN) {
                         // Move to the left lane: Turn left part.
                         m_vehicleControl.setSpeed(.9);
-                        m_vehicleControl.setSteeringWheelAngle(-10);
+                        m_vehicleControl.setSteeringWheelAngle(-5);
 
                         stageToRightLaneLeftTurn--;
                         if (stageToRightLaneLeftTurn == 0) {
                             // Start over.
+
+                            stageToRightLaneRightTurn = 0;
+                            stageToRightLaneLeftTurn = 15;
+
                             stageMoving = FORWARD;
                             stageMeasuring = FIND_OBJECT_INIT;
 

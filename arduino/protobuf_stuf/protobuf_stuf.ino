@@ -80,7 +80,7 @@ void setup() {
 
 void initSerial()
 {
-  Serial.begin(57600);
+  Serial.begin(115200);
   send_ostream = pb_ostream_from_buffer(send_buffer, sizeof(send_buffer));
 }
 

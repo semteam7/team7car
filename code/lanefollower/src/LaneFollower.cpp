@@ -256,8 +256,8 @@ namespace automotive {
 //            const double Kd = 0;
 
             // The following values have been determined by Twiddle algorithm.
-            m_messagecount++;
-            cout << "MESSAGE COUNTER = " << m_messagecount << endl;        
+//            m_messagecount++;
+//            cout << "MESSAGE COUNTER = " << m_messagecount << endl;
 
              double Kp = m_kp;
              double Ki = m_ki;
@@ -280,9 +280,11 @@ namespace automotive {
                 desiredSteering = y;
 
                 if (desiredSteering > 25.0) {
+                    cerr << "Steering out of range positive" << endl;
                     desiredSteering = 25.0;
                 }
                 if (desiredSteering < -25.0) {
+                    cerr << "Steering out of range negative" << endl;
                     desiredSteering = -25.0;
                 }
             }
@@ -297,7 +299,7 @@ namespace automotive {
 
             // Print DesiredSteering
             stringstream ss;
-            ss << "desiredSteering: " << desiredSteering;
+            ss << "desiredSteering: " << desiredSteering << " : " << desiredSteering * 57.3 ;
             cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(200, 0, 200));
 
             stringstream s1;
@@ -401,8 +403,8 @@ namespace automotive {
                     }
                     else if (stageMoving == TO_LEFT_LANE_LEFT_TURN) {
                         // Move to the left lane: Turn left part until both IRs see something.
-                        m_vehicleControl.setSpeed(1);
-                        m_vehicleControl.setSteeringWheelAngle(-25);
+                        //m_vehicleControl.setSpeed(1);
+                        //m_vehicleControl.setSteeringWheelAngle(-25);
 
                         // State machine measuring: Both IRs need to see something before leaving this moving state.
                         stageMeasuring = HAVE_BOTH_IR;
@@ -411,8 +413,8 @@ namespace automotive {
                     }
                     else if (stageMoving == TO_LEFT_LANE_RIGHT_TURN) {
                         // Move to the left lane: Turn right part until both IRs have the same distance to obstacle.
-                        m_vehicleControl.setSpeed(1);
-                        m_vehicleControl.setSteeringWheelAngle(25);
+                        //m_vehicleControl.setSpeed(1);
+                        //m_vehicleControl.setSteeringWheelAngle(25);
 
                         // State machine measuring: Both IRs need to have the same distance before leaving this moving state.
                         stageMeasuring = HAVE_BOTH_IR_SAME_DISTANCE;
@@ -429,8 +431,8 @@ namespace automotive {
                     }
                     else if (stageMoving == TO_RIGHT_LANE_RIGHT_TURN) {
                         // Move to the right lane: Turn right part.
-                        m_vehicleControl.setSpeed(1.5);
-                        m_vehicleControl.setSteeringWheelAngle(25);
+                        //m_vehicleControl.setSpeed(1.5);
+                        //m_vehicleControl.setSteeringWheelAngle(25);
 
                         stageToRightLaneRightTurn--;
                         if (stageToRightLaneRightTurn == 0) {
@@ -439,8 +441,8 @@ namespace automotive {
                     }
                     else if (stageMoving == TO_RIGHT_LANE_LEFT_TURN) {
                         // Move to the left lane: Turn left part.
-                        m_vehicleControl.setSpeed(.9);
-                        m_vehicleControl.setSteeringWheelAngle(-25);
+                        //m_vehicleControl.setSpeed(.9);
+                        //m_vehicleControl.setSteeringWheelAngle(-25);
 
                         stageToRightLaneLeftTurn--;
                         if (stageToRightLaneLeftTurn == 0) {
@@ -467,7 +469,7 @@ namespace automotive {
 
                         // Approaching an obstacle (stationary or driving slower than us).
                         if (  (distanceToObstacle > 0) && (((distanceToObstacleOld - distanceToObstacle) > 0) || (fabs(distanceToObstacleOld - distanceToObstacle) < 1e-2)) ) {
-                            // Check if overtaking shall be started.                        
+                            // Check if overtaking shall be started.
                             stageMeasuring = FIND_OBJECT_PLAUSIBLE;
                         }
 

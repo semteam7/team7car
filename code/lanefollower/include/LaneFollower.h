@@ -87,7 +87,7 @@ namespace automotive {
 	            IplImage *m_image;
                 bool m_debug;
                 CvFont m_font;
-				double m_kp = 1.1;
+				double m_kp = 1;
 				double m_ki = 0.01;
 				double m_kd = 0.7;
 

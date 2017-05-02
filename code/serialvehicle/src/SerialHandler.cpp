@@ -28,17 +28,11 @@ namespace team7 {
 
     void SerialHandler::nextString(const string &s){
         cout << "Received : " << s.size() << "'" << s << "'" << endl;
-
+//        char reading[16];
 //        m_receive_buffer << s;
-//        if(m_receive_buffer.tellp() > 66){ //attempt to read the buffer
-//            IRData ird;
-//            USData usd;
-//
-//            ird << m_receive_buffer;
-//            usd << m_receive_buffer;
-//
-//            m_receive_sb = stringbuf();
-//            m_receive_buffer = iostream(&m_receive_sb);
+//        if(m_receive_buffer.tellp() > 0 ){ //attempt to read the buffer
+//            m_receive_buffer.getline(reading, 16);
+//            cout << reading << endl;
 //        }
 
     }

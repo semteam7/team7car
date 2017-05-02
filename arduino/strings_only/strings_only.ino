@@ -1,19 +1,11 @@
 #include <Servo.h>
 #include <stdio.h>
+#include <Wire.h>
+#include "SonarSRF08.h"
 
-extern "C" {
-  #include "pb.h"
-  #include "pb_encode.h"
-  #include "pb_decode.h"
-  #include "double_conversion.h" 
-  #include "vehiclecommand.pb.h"
-  #include "usdata.pb.h"
-  #include "irdata.pb.h"
-}
-
-#include "pb_arduino_encode.h"
-#include "pb_arduino_decode.h"
-
+//Borrowed from examples
+#define GAIN_REGISTER 0x09
+#define LOCATION_REGISTER 0x8C
 
 //Digital
 int SERVO_CONTROL_PIN = 6;
@@ -29,8 +21,8 @@ int IR_1 = 0;
 int IR_2 = 1;
 int IR_3 = 2;
 
-int US_1;
-int US_2;
+int US_1 = 0xE2 >> 1;
+int US_2 = 0xE4 >> 1;
 
 int received = 0;
 
@@ -40,34 +32,28 @@ int STEERING_FULL_RIGHT = 180;
 int SPEED_INPUT;
 int STEERING_INPUT;
 
-const byte numChars = 80;
-#define SERIAL_BUFFER 1000
-byte receivedBytes[SERIAL_BUFFER];
+int IR_DISTANCE_FACTOR = 12.5;
+int IR_DISTANCE_CUTOFF = 40;
 
-boolean newData = false;
+char US_UNIT = 'c';
+SonarSRF08 sonar1(US_1, GAIN_REGISTER, LOCATION_REGISTER);//sonar2(US_2);
 
 Servo esc, steering;
 
-
-//Serial init
-uint8_t send_buffer[66];
-pb_ostream_t send_ostream;
-
-uint8_t receive_buffer[128];
-int received_bytes;
-pb_istream_t receive_istream;
-
-
 int ledPin = 13;
 
+
+
 void setup() {
-  pinMode(ledPin, OUTPUT);
+  //pinMode(ledPin, OUTPUT);
   
   pinMode(ESC_PIN, OUTPUT);
   pinMode(SERVO_CONTROL_PIN, OUTPUT);
   esc.attach(ESC_PIN);
   steering.attach(SERVO_CONTROL_PIN);
-   
+  
+  sonar1.begin();
+ // sonar2.begin();
    
   initSerial();
   //digitalWrite(ledPin, HIGH);
@@ -80,14 +66,7 @@ void setup() {
 
 void initSerial()
 {
-  Serial.begin(57600);
-  send_ostream = pb_ostream_from_buffer(send_buffer, sizeof(send_buffer));
-}
-
-void sendSerial()
-{
-  Serial.write(send_buffer, send_ostream.bytes_written);
-  send_ostream = pb_ostream_from_buffer(send_buffer, sizeof(send_buffer)); //reset send_ostream
+  Serial.begin(115200);
 }
 
 int rcThrottleValue, rcSteeringValue;
@@ -95,13 +74,7 @@ bool safetyStop = false;
 
 void loop() {
   readFromSerial();
-
- // sendIrData(2, 10);
- // sendUsData(4, 5);
-
-  //sendSerial();
-  //sendSensorData("I",2,10);
-  //delay(100);
+  readSensors();
 }
 
 void readFromSerial() {
@@ -136,7 +109,7 @@ void readFromSerial() {
 
 }
 
-boolean serialDebug = true;
+boolean serialDebug = false;
 void error(String reason){
   if(serialDebug)
   {
@@ -159,6 +132,49 @@ void executeVehicleCommand(float carSpeed, float carAngle)
     esc.write(carSpeed);
     steering.write(carAngle);
 }
+
+void readSensors(){
+  //Read IR Sensors
+  sendSensorData("I", 1, readIRSensor(IR_1));
+  sendSensorData("I", 2, readIRSensor(IR_2));
+  sendSensorData("I", 3, readIRSensor(IR_3));
+  sendSensorData("U", 4, readUSSensor(US_1));
+  sendSensorData("U", 5, readUSSensor(US_2));
+}
+
+float readIRSensor(int pin)
+{
+  float v = analogRead(pin) * (5.0 / 1023.0); //scale analog read value to voltage
+  float d = IR_DISTANCE_FACTOR / v;           //get distance in centimeters
+  if(d > IR_DISTANCE_CUTOFF) { return -1; }   //if above cutoff, return -1
+  return d;
+}
+
+float readUSSensor(int address)
+{  
+  int range = 0; 
+  
+  Wire.beginTransmission(address);                
+  Wire.write(0x00);                               // start command
+  Wire.write(0x51);                               // start ranging in cm
+  Wire.endTransmission();
+  
+  delay(70);                                      // Wait for ranging to be complete
+  
+  Wire.beginTransmission(address);            
+  Wire.write(0x02);                               // request ranging data
+  Wire.endTransmission();
+  
+  Wire.requestFrom(address, 2);                   // request 2 bytes from SRF module
+  while(Wire.available() < 2);                   
+  byte highByte = Wire.read();                          // Get high byte
+  byte lowByte = Wire.read();                           // Get low byte
+
+  range = (highByte << 8) + lowByte;
+  
+  return range;
+}
+
 
 void sendSensorData(String type, int sensorId, float sensorReading){
   String sensorData = "S";

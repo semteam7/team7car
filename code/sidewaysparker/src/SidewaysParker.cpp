@@ -54,13 +54,21 @@ namespace automotive {
 
         // This method will do the main data processing job.
         odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode SidewaysParker::body() {
-            const double ULTRASONIC_FRONT_RIGHT = 0;
+            const double INFRARED_FRONT_RIGHT = 0; //0correct
+            const double INFRARED_REAR = 1; //1correct
+            //const double INFRARED_REAR_RIGHT = 2; //2correct
+            //const double ULTRASONIC_FRONT_CENTER = 3; //3correct
+            const double ULTRASONIC_FRONT_RIGHT = 4; //4correct
+            const double ULTRASONIC_REAR_RIGHT = 5; //5correct?
             double distanceOld = 0;
             double absPathStart = 0;
             double absPathEnd = 0;
 
             int stageMoving = 0;
-            int stageMeasuring = 0;
+            char stageMeasuring = 0;
+
+            VehicleControl vc;
+
 
             while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
                 // 1. Get most recent vehicle data:
@@ -72,7 +80,6 @@ namespace automotive {
                 SensorBoardData sbd = containerSensorBoardData.getData<SensorBoardData> ();
 
                 // Create vehicle control data.
-                VehicleControl vc;
 
                 // Moving state machine.
                 if (stageMoving == 0) {
@@ -80,67 +87,104 @@ namespace automotive {
                     vc.setSpeed(2);
                     vc.setSteeringWheelAngle(0);
                 }
-                if ((stageMoving > 0) && (stageMoving < 40)) {
-                    // Move slightly forward.
-                    vc.setSpeed(.4);
-                    vc.setSteeringWheelAngle(0);
-                    stageMoving++;
+
+                    if ((stageMoving == 1)
+                        && (sbd.getValueForKey_MapOfDistances(ULTRASONIC_REAR_RIGHT) > 3)) {
+                        // Move slightly forward.
+                        vc.setSpeed(.4);
+                        vc.setSteeringWheelAngle(0);
+                    }
+
+                else if ((stageMoving == 1)
+                && (sbd.getValueForKey_MapOfDistances(ULTRASONIC_REAR_RIGHT) < 3)){
+                        vc.setSpeed(0);
+                        vc.setSteeringWheelAngle(0);
+                        stageMoving++;
+                    }
+
+
+                if (stageMoving == 2) {
+                    if ((sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) > 1)
+                            && ((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 1)
+                                 ||(sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 0 ))) {
+                        vc.setSpeed(-1.6);
+                        vc.setSteeringWheelAngle(30);
+                    }
+                    else{
+                     stageMoving++;
+                    }
                 }
-                if ((stageMoving >= 40) && (stageMoving < 45)) {
-                    // Stop.
-                    vc.setSpeed(0);
-                    vc.setSteeringWheelAngle(25);
-                    stageMoving++;
+
+
+                if (stageMoving == 3) {
+                    if (((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 1)
+                            ||(sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 0 ))
+                        && ((sbd.getValueForKey_MapOfDistances(INFRARED_REAR) > 2)
+                            || (sbd.getValueForKey_MapOfDistances(INFRARED_REAR) < 0))) {
+                        vc.setSpeed(-0.175);
+                        vc.setSteeringWheelAngle(-25);
+                    }
+                    else{
+                        {vc.setSpeed(0);}
+                    }
                 }
-                if ((stageMoving >= 45) && (stageMoving < 85)) {
-                    // Backwards, steering wheel to the right.
-                    vc.setSpeed(-1.6);
-                    vc.setSteeringWheelAngle(25);
-                    stageMoving++;
-                }
-                if ((stageMoving >= 85) && (stageMoving < 220)) {
-                    // Backwards, steering wheel to the left.
-                    vc.setSpeed(-.175);
-                    vc.setSteeringWheelAngle(-25);
-                    stageMoving++;
-                }
-                if (stageMoving >= 220) {
-                    // Stop.
-                    vc.setSpeed(0);
-                    vc.setSteeringWheelAngle(25);
-                }
+
+
+              /*
+              if ((stageMoving > 0) && (stageMoving < 40)) {
+                  // Move slightly forward.
+                  vc.setSpeed(.4);
+                  vc.setSteeringWheelAngle(0);
+                  stageMoving++;
+              }
+              if ((stageMoving >= 40) && (stageMoving < 45)) {
+                  // Stop.
+                  vc.setSpeed(0);
+                  vc.setSteeringWheelAngle(0);
+                  stageMoving++;
+              }
+              if ((stageMoving >= 45) && (stageMoving < 85)) {
+                  // Backwards, steering wheel to the right.
+                  vc.setSpeed(-1.6);
+                  vc.setSteeringWheelAngle(25);
+                  stageMoving++;
+              }
+              if ((stageMoving >= 85) && (stageMoving < 220)) {
+                  // Backwards, steering wheel to the left.
+                  vc.setSpeed(-.175);
+                  vc.setSteeringWheelAngle(-25);
+                  stageMoving++;
+              }
+              if (stageMoving >= 220) {
+                  // Stop.
+                  vc.setSpeed(0);
+                  vc.setSteeringWheelAngle(0);
+              }*/
 
                 // Measuring state machine.
                 switch (stageMeasuring) {
                     case 0:
                         {
                             // Initialize measurement.
-							cout << "Stage Measuring " << stageMeasuring << endl;
-							cout << "Sensor Distance " << ULTRASONIC_FRONT_RIGHT << endl;
-                            distanceOld = sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT);
+                            distanceOld = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
                             stageMeasuring++;
                         }
                     break;
                     case 1:
                         {
-							cout << "Stage Measuring " << stageMeasuring << endl;
-							cout << "Sensor Distance " << ULTRASONIC_FRONT_RIGHT << endl;
-							
                             // Checking for sequence +, -.
-                            if ((distanceOld > 0) && (sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) < 0)) {
+                            if ((distanceOld > 0) && (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 0)) {
                                 // Found sequence +, -.
                                 stageMeasuring = 2;
                                 absPathStart = vd.getAbsTraveledPath();
                             }
-                            distanceOld = sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT);
+                            distanceOld = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
                         }
                     break;
                     case 2:
                         {
-							cout << "Stage Measuring " << stageMeasuring << endl;
-							cout << "Sensor Distance " << distanceOld << endl;
                             // Checking for sequence -, +.
-                            if ((distanceOld < 0) && (sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) > 0)) {
+                            if ((distanceOld < 0) && (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0)) {
                                 // Found sequence -, +.
                                 stageMeasuring = 1;
                                 absPathEnd = vd.getAbsTraveledPath();
@@ -153,7 +197,7 @@ namespace automotive {
                                     stageMoving = 1;
                                 }
                             }
-                            distanceOld = sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT);
+                            distanceOld = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
                         }
                     break;
                 }
@@ -168,4 +212,3 @@ namespace automotive {
         }
     }
 } // automotive::miniature
-

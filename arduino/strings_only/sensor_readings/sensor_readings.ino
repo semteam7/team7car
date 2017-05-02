@@ -6,8 +6,8 @@ int us_frontCenter = 113;
 int us_frontRight = 114;
 
 //IR pins on Arduino
-#define front_righ A0
-#define rear_righ A1
+#define front_right A0
+#define rear_right A1
 #define rear A2
 
 void setup() {
@@ -26,15 +26,16 @@ void loop() {
  * Reads the sensors
  */
 String ReadSensors(){
-  int sonar1 = ReadUSSensor(us_frontCenter);  //Read ultrasonic sensors
+   //Read ultrasonic sensors
+  int sonar1 = ReadUSSensor(us_frontCenter); 
 
   int sonar2 = ReadUSSensor(us_frontRight);
 
 
-      //resd the IRs:  
-  int inred1 = VoltageToCm(analogRead(front_righ));  
+      //read the IRs:  
+  int inred1 = VoltageToCm(analogRead(front_right));  
 
-  int inred2 = VoltageToCm(analogRead(rear_righ));
+  int inred2 = VoltageToCm(analogRead(rear_right));
 
   int inred3 = VoltageToCm(analogRead(rear));
 
@@ -78,11 +79,11 @@ int ReadUSSensor(int address){
  * Takes 5 integer values and separate them with spaces in a string
  */
 String setString(int i_1, int i_2, int i_3, int i_4, int i_5){
-  String s1 = String(i_1);
-  String s2 = String(i_2);
-  String s3 = String(i_3);
-  String s4 = String(i_4);
-  String s5 = String(i_5);
+  String s1 = "us_fCenter: " + String(i_1);
+  String s2 = "us_fRight: " + String(i_2);
+  String s3 = "IR fRight:" + String(i_3);
+  String s4 = "IR rRight: " + String(i_4);
+  String s5 = "IR rear: " + String(i_5);
 
   String valueS = s1 + ", " + s2 + ", " + s3 + ", " + s4 + ", " + s5;
   return valueS;

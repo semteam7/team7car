@@ -76,7 +76,7 @@ void SerialVehicle::nextContainer(odcore::data::Container &c) {
                 VehicleControl vc = c.getData<VehicleControl> ();
 
                 stringstream cs;
-                cs << setprecision(2) << vc.getSpeed() << ";" << vc.getSteeringWheelAngle() << "\r\n";
+                cs << "C" << setprecision(2) << vc.getSpeed() << ";" << vc.getSteeringWheelAngle() << "\r\n";
                 string command = cs.str();
 
                 m_serial->send(command);

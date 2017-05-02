@@ -61,6 +61,7 @@ namespace automotive {
             m_previousTime(),
             m_eSum(0),
             m_eOld(0),
+            m_messagecount(0),
             m_vehicleControl() {}
 
         LaneFollower::~LaneFollower() {}
@@ -85,7 +86,6 @@ namespace automotive {
 	        if (m_debug) {
 		        cvDestroyWindow("Original");
                 cvDestroyWindow("Canny");
-
 	        }
         }
 
@@ -147,12 +147,13 @@ namespace automotive {
 
 
         void LaneFollower::processImage() {
+
             static bool useRightLaneMarking = true;
             double e = 0;
 
 
-            const int32_t CONTROL_SCANLINE = 462; // calibrated length to right: 280px
-            const int32_t distance = 280;
+            const int32_t CONTROL_SCANLINE = 352; // calibrated length to right: 280px
+            const int32_t distance = 160;
 
             TimeStamp beforeImageProcessing;
             for(int32_t y = cannyImage->height - 8; y > cannyImage->height * .6; y -= 10) {
@@ -182,26 +183,30 @@ namespace automotive {
                     }
                 }
 
-                if (m_debug) {
-                    if (left.x > 0) {
-                    	CvScalar green = CV_RGB(0, 255, 0);
-                    	cvLine(m_image, cvPoint(m_image->width/2, y), left, green, 1, 8);
 
-                        stringstream sstr;
-                        sstr << (m_image->width/2 - left.x);
-                    	cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 - 100, y - 2), &m_font, green);
-                    }
-                    if (right.x > 0) {
-                    	CvScalar red = CV_RGB(255, 0, 0);
-                    	cvLine(m_image, cvPoint(m_image->width/2, y), right, red, 1, 8);
-
-                        stringstream sstr;
-                        sstr << (right.x - m_image->width/2);
-                    	cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 + 100, y - 2), &m_font, red);
-                    }
-                }
 
                 if (y == CONTROL_SCANLINE) {
+
+                    if (m_debug) {
+                        if (left.x > 0) {
+                            CvScalar green = CV_RGB(0, 255, 0);
+                            cvLine(m_image, cvPoint(m_image->width/2, y), left, green, 1, 8);
+
+                            stringstream sstr;
+                            sstr << (m_image->width/2 - left.x);
+                            cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 - 100, y - 2), &m_font, green);
+                        }
+                        if (right.x > 0) {
+                            CvScalar red = CV_RGB(255, 0, 0);
+                            cvLine(m_image, cvPoint(m_image->width/2, y), right, red, 1, 8);
+
+                            stringstream sstr;
+                            sstr << (right.x - m_image->width/2);
+                            cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 + 100, y - 2), &m_font, red);
+                        }
+                    }
+
+
                     // Calculate the deviation error.
                     if (right.x > 0) {
                         if (!useRightLaneMarking) {
@@ -251,9 +256,17 @@ namespace automotive {
 //            const double Kd = 0;
 
             // The following values have been determined by Twiddle algorithm.
-            const double Kp = 1.29;
-            const double Ki = 0.01;
-            const double Kd = 0.1;
+            m_messagecount++;
+            cout << "MESSAGE COUNTER = " << m_messagecount << endl;        
+
+             double Kp = m_kp;
+             double Ki = m_ki;
+             double Kd = m_kd;
+//
+//            if (m_messagecount % 500 == 0) {
+//                m_kp = Kp + 0.1;
+//                cout << "Kp = " << Kp << endl;
+//            }
 
             const double p = Kp * e;
             const double i = Ki * timeStep * m_eSum;
@@ -285,11 +298,21 @@ namespace automotive {
             // Print DesiredSteering
             stringstream ss;
             ss << "desiredSteering: " << desiredSteering;
-            cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(0, 0, 200));
+            cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(200, 0, 200));
 
+            stringstream s1;
+            s1 << "Kp: " << Kp;
+            cvPutText(m_image, s1.str().c_str(), cvPoint(20,60), &m_font, CV_RGB(0, 0, 200));
 
+            stringstream s2;
+            s2 << "Ki: " << Ki;
+            cvPutText(m_image, s2.str().c_str(), cvPoint(20,70), &m_font, CV_RGB(0, 0, 200));
 
-                    // Show resulting features.
+            stringstream s3;
+            s3 << "Kd: " << Kd;
+            cvPutText(m_image, s3.str().c_str(), cvPoint(20,80), &m_font, CV_RGB(0, 0, 200));
+
+            // Show resulting features.
             if (m_debug) {
                 if (m_image != NULL) {
                     cvShowImage("Original", m_image); // original: m_image

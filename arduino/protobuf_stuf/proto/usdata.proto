@@ -1,0 +1,5 @@
+message USData{
+    optional int32 sensor_id = 1;
+    optional int32 timestamp = 2;
+    optional int32 reading   = 3;
+}

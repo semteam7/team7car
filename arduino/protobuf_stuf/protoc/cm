@@ -1,0 +1,2 @@
+#! /bin/bash
+protoc --plugin=protoc-gen-nanopb --nanopb_out=../ --proto_path=../proto ../proto/*

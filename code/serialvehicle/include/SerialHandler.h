@@ -13,6 +13,9 @@
 #include <opendavinci/odcore/wrapper/SerialPort.h>
 #include <opendavinci/odcore/wrapper/SerialPortFactory.h>
 #include <opendavinci/odcore/io/StringListener.h>
+
+#include <automotivedata/GeneratedHeaders_AutomotiveData.h>
+
 namespace scaledcars {
     namespace team7 {
 
@@ -27,6 +30,8 @@ namespace scaledcars {
 
         public:
             SerialHandler();
+            stringbuf m_receive_sb;
+            iostream m_receive_buffer;
             virtual void nextString(const string &s);
         };
     }

@@ -70,7 +70,7 @@ using namespace odcore::wrapper;
     const string   SERIAL_PORT =  "/dev/ttyACM0";
     const uint32_t BAUD_RATE = 115200;
     std::shared_ptr<SerialPort> m_serial;
-//  VehicleControl vc_buffer[];
+    //VehicleControl vc_buffer[];
     SerialHandler m_serialHandler;
     int vc_count = 0;
     const chrono::time_point<chrono::system_clock> m_connected_at;

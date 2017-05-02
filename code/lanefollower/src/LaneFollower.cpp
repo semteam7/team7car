@@ -297,12 +297,22 @@ namespace automotive {
 
             // Print DesiredSteering
             stringstream ss;
-            ss << "desiredSteering: " << desiredSteering << "\r\nKp: " << Kp << "\r\nKi: " << Ki << "\r\nKd" << Kd;
-            cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(0, 0, 200));
+            ss << "desiredSteering: " << desiredSteering;
+            cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(200, 0, 200));
 
+            stringstream s1;
+            s1 << "Kp: " << Kp;
+            cvPutText(m_image, s1.str().c_str(), cvPoint(20,60), &m_font, CV_RGB(0, 0, 200));
 
+            stringstream s2;
+            s2 << "Ki: " << Ki;
+            cvPutText(m_image, s2.str().c_str(), cvPoint(20,70), &m_font, CV_RGB(0, 0, 200));
 
-                    // Show resulting features.
+            stringstream s3;
+            s3 << "Kd: " << Kd;
+            cvPutText(m_image, s3.str().c_str(), cvPoint(20,80), &m_font, CV_RGB(0, 0, 200));
+
+            // Show resulting features.
             if (m_debug) {
                 if (m_image != NULL) {
                     cvShowImage("Original", m_image); // original: m_image

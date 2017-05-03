@@ -51,7 +51,7 @@ using namespace odcore::wrapper;
     SerialVehicle::SerialVehicle(const int &argc, char **argv)
             : DataTriggeredConferenceClientModule(argc, argv, "serialvehicle"),
               m_serial(SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE)),
-              m_serialHandler(),
+              m_serialHandler(getConference()),
               m_connected_at(chrono::system_clock::now()){}
 
 SerialVehicle::~SerialVehicle() {}

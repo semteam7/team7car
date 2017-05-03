@@ -17,12 +17,12 @@ int SERVO_SENSE_PIN = 4;
 int RC_STEERING_PIN = 2;//switch?
 int RC_THROTTLE_PIN = 4;
 
-int IR_1 = 0;
-int IR_2 = 1;
-int IR_3 = 2;
+int IR_1 = 0; //left_front
+int IR_2 = 1; //left_back
+int IR_3 = 2; //back
 
-int US_1 = 0xE2 >> 1;
-int US_2 = 0xE4 >> 1;
+int US_1 = 0xE2 >> 1; // front
+int US_2 = 0xE4 >> 1; // front-left
 
 int received = 0;
 
@@ -135,11 +135,7 @@ void executeVehicleCommand(float carSpeed, float carAngle)
 
 void readSensors(){
   //Read IR Sensors
-  sendSensorData("I", 1, readIRSensor(IR_1));
-  sendSensorData("I", 2, readIRSensor(IR_2));
-  sendSensorData("I", 3, readIRSensor(IR_3));
-  sendSensorData("U", 4, readUSSensor(US_1));
-  sendSensorData("U", 5, readUSSensor(US_2));
+  sendSensorData();
 }
 
 float readIRSensor(int pin)
@@ -176,9 +172,19 @@ float readUSSensor(int address)
 }
 
 
-void sendSensorData(String type, int sensorId, float sensorReading){
+void sendSensorData(){
   String sensorData = "S";
-  sensorData += sensorId;
-  sensorData += sensorReading;
+  sensorData += ":";
+  sensorData += readIRSensor(IR_1);
+  sensorData += ":";
+  sensorData += readIRSensor(IR_2);
+  sensorData += ":";
+  sensorData += readIRSensor(IR_3);
+  sensorData += ":";
+  sensorData += readUSSensor(US_1);
+  sensorData += ":";
+  sensorData += readUSSensor(US_2);
+  
+  
   Serial.println(sensorData);
 }

@@ -38,20 +38,26 @@ namespace team7 {
         m_conference(conference){}
 
     void SerialHandler::nextString(const string &s){
-        cout << "Received : " << s.size() << "'" << s << "'" << endl;
         char reading[128];
         m_receive_buffer << s;
-
-        if(m_receive_buffer.tellp() > 0 ){ //attempt to read the buffer
-            m_receive_buffer.getline(reading, 128, '\n');
+        m_receive_buffer.getline(reading, 128, '\n');
+        if(reading[0] != '\0'){ //attempt to read the buffer
 
             double values[5];
-            int val_count;
             char *val = std::strtok(reading, ":");
+            val = std::strtok(NULL, ":");
+
+            int val_count = 0;
             while(val){
                 values[val_count] = atof(val);
                 val_count++;
-                strtok(NULL, ":");
+                cout << "val" << val << endl;
+                val = std::strtok(NULL, ":"); // skip one
+            }
+
+            if(val_count < 4) {
+                cerr << "Bad SensorBoardData, skipping";
+                return;
             }
 
             m_sensorboard_data.setNumberOfSensors(5);
@@ -63,7 +69,6 @@ namespace team7 {
                 {5, values[4]}
             };
             m_sensorboard_data.setMapOfDistances(distances);
-
             Container c(m_sensorboard_data);
             m_conference.send(c);
         }

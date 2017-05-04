@@ -6,6 +6,8 @@
 //Borrowed from examples
 #define GAIN_REGISTER 0x09
 #define LOCATION_REGISTER 0x8C
+#define MOCK true
+
 
 //Digital
 int SERVO_CONTROL_PIN = 6;
@@ -71,10 +73,16 @@ void initSerial()
 
 int rcThrottleValue, rcSteeringValue;
 bool safetyStop = false;
-
+long lastRead = 0;
 void loop() {
   readFromSerial();
-  readSensors();
+
+  if((lastRead + 100) < millis())
+  {
+    lastRead = millis();
+    readSensors();
+  }
+  
 }
 
 void readFromSerial() {
@@ -140,6 +148,8 @@ void readSensors(){
 
 float readIRSensor(int pin)
 {
+  if(MOCK) return -1;
+  
   float v = analogRead(pin) * (5.0 / 1023.0); //scale analog read value to voltage
   float d = IR_DISTANCE_FACTOR / v;           //get distance in centimeters
   if(d > IR_DISTANCE_CUTOFF) { return -1; }   //if above cutoff, return -1
@@ -148,6 +158,8 @@ float readIRSensor(int pin)
 
 float readUSSensor(int address)
 {  
+  if(MOCK) return 0;
+  
   int range = 0; 
   
   Wire.beginTransmission(address);                

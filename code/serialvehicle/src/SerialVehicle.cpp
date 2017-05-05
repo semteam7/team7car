@@ -21,9 +21,6 @@
 
 #include <iostream>
 
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-
 #include <opendavinci/odcore/base/Lock.h>
 #include <opendavinci/odcore/wrapper/SharedMemoryFactory.h>
 
@@ -37,6 +34,7 @@
 #include <opendavinci/odcore/wrapper/SerialPortFactory.h>
 
 #include "SerialVehicle.h"
+#include "SerialHandler.h"
 
 namespace scaledcars {
 namespace team7 {
@@ -51,47 +49,50 @@ using namespace odcore;
 using namespace odcore::wrapper;
 
     SerialVehicle::SerialVehicle(const int &argc, char **argv)
-    : DataTriggeredConferenceClientModule(argc, argv, "serialvehicle") {}
+            : DataTriggeredConferenceClientModule(argc, argv, "serialvehicle"),
+              m_serial(SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE)),
+              m_serialHandler(getConference()),
+              m_connected_at(chrono::system_clock::now()){}
+
 SerialVehicle::~SerialVehicle() {}
 
 void SerialVehicle::setUp() {
-    // Attach to serial port
-    // We are using OpenDaVINCI's std::shared_ptr to automatically
-    // release any acquired resources.
-//
-//    try {
-//        cout << "Connected to serial port ttyACM0" << endl;
-//    }
-//    catch(string &exception) {
-//        cerr << exception << endl;
-//        exit(0);
-//    }
-
+    m_serial->setStringListener(&m_serialHandler);
+    m_serial->start();
 }
 
 void SerialVehicle::tearDown() {
-    // Release serial port
+    m_serial->stop();
+    m_serial->setStringListener(NULL);
 }
 
 void SerialVehicle::nextContainer(odcore::data::Container &c) {
-    m_serial = std::shared_ptr<SerialPort>(SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
-    m_serial->setStringListener(this);
-    m_serial->start();
-
     if (c.getDataType() == VehicleControl::ID()) {
             vc_count++;
-            if(vc_count % 10 == 0)
+            cout << "Message count: " <<vc_count << endl;
+            if(vc_count % 15 == 0)
             {
                 VehicleControl vc = c.getData<VehicleControl> ();
 
-                string command = std::to_string(vc.getSpeed())+ ";" + std::to_string(vc.getSteeringWheelAngle()) + "\r\n";
+                cout << "VC speed: " <<vc.getSpeed() << " VC angle: " << vc.getSteeringWheelAngle() << endl;
+
+                stringstream cs;
+                cs << "C" << setprecision(2) << vc.getSpeed() << ";" << vc.getSteeringWheelAngle() << "\r\n";
+                string command = cs.str();
+
                 m_serial->send(command);
                 cout << "Sent command: " << command;
             }
         }
 
-    m_serial->stop();
-    m_serial->setStringListener(NULL);
+}
+
+void SerialVehicle::reconnect()
+{
+    m_serial.reset(SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
+
+    m_serial->setStringListener(&m_serialHandler);
+    m_serial->start();
 }
 
 void SerialVehicle::nextString(const string &s)

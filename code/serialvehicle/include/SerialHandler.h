@@ -45,6 +45,7 @@ namespace scaledcars {
             iostream m_receive_buffer;
             SensorBoardData m_sensorboard_data;
             ContainerConference &m_conference;
+            string m_received;
             virtual void nextString(const string &s);
         };
     }

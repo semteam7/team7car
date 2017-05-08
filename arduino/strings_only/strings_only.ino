@@ -6,8 +6,7 @@
 //Borrowed from examples
 #define GAIN_REGISTER 0x09
 #define LOCATION_REGISTER 0x8C
-#define MOCK true
-
+#define MOCK false
 
 //Digital
 int SERVO_CONTROL_PIN = 6;
@@ -148,11 +147,11 @@ void readSensors(){
 
 float readIRSensor(int pin)
 {
-  if(MOCK) return -1;
+  if(MOCK) return 4;
   
   float v = analogRead(pin) * (5.0 / 1023.0); //scale analog read value to voltage
   float d = IR_DISTANCE_FACTOR / v;           //get distance in centimeters
-  if(d > IR_DISTANCE_CUTOFF) { return -1; }   //if above cutoff, return -1
+  if(d > IR_DISTANCE_CUTOFF) { return 2; }   //if above cutoff, return -1
   return d;
 }
 

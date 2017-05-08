@@ -16,14 +16,3 @@ services:
                 environment:
                         - DISPLAY=${DISPLAY}
                 user: odv
-                network_mode: host
-                ipc: host
-                command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111 --freq=20 --ipc=host -e DISPLAY=$$DISPLAY"
-
-                        - "/dev/video0:/dev/video0"
-                user: odv
-                network_mode: host
-                ipc: host
-                command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111 --freq=20"
-
-

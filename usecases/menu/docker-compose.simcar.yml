@@ -1,0 +1,13 @@
+version: '2'
+
+services:
+        odsimirus:
+                build: .
+                network_mode: "host"
+                volumes:
+                        - ${conf}:/opt/configuration
+                command: /opt/od4/bin/odsimirus --freq=$FREQ --cid=111 --verbose=0
+                depends_on: ['odsupercomponent']
+                working_dir: /opt/configuration
+
+ 

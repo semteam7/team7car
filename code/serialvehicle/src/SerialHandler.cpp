@@ -59,7 +59,7 @@ namespace team7 {
             while(val && val_count < 5){
                 values[val_count] = atof(val);
                 val_count++;
-                cout << "val" << val << endl
+                cout << "val" << val << endl;
                 val = std::strtok(NULL, ":"); // skip one
             }
 

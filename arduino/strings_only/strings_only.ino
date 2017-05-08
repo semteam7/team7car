@@ -154,7 +154,7 @@ char readIRSensor(int pin)
   if(d > IR_DISTANCE_CUTOFF) { return 2; }    //if above cutoff, return -1
 
 
-  return (char) d;
+  return ((char) d) + 31;
 }
 
 char readUSSensor(int address)
@@ -181,7 +181,7 @@ char readUSSensor(int address)
 
   range = (highByte << 8) + lowByte;
   
-  return (char) range;
+  return ((char) range) + 31;
 }
 
 

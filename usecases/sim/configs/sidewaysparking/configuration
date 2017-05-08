@@ -20,7 +20,7 @@
 #
 global.car = file://Car1.objx
 #global.scenario = file://SEM_Test_Track-overtaking.scnx
-global.scenario = file://Example2(noBoxes).scnx
+global.scenario = file://Example2(smallSpace).scnx
 #global.scenario = file://Parking-boxes-2.scnx
 global.showGrid = 0
 

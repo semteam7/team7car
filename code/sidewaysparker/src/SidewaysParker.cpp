@@ -94,12 +94,12 @@ namespace automotive {
                     absPathEnd = vd.getAbsTraveledPath();
                     vc.setSpeed(2);
                     vc.setSteeringWheelAngle(0);
-                    cout << "path end " << absPathEnd << endl;
-                    cout << "path start " << absPathStart << endl;
-                    cout << "gap_size  " << gap_size << endl;
+                    //cout << "path end " << absPathEnd << endl;
+                    //cout << "path start " << absPathStart << endl;
+                    //cout << "gap_size  " << gap_size << endl;
 
 
-
+                    //New code for finding a gap
                     if((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 0)
                             && (absPathEnd == (absPathStart + 1))) {
                         absPathStart = vd.getAbsTraveledPath();
@@ -108,12 +108,12 @@ namespace automotive {
 
                     if(gap_size >= 7
                        && (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0)){
-                        cout << "gap 7 " << endl;
+                        //cout << "gap 7 " << endl;
                         stageMoving = 2;
                     }
 
                     else if(gap_size >= 10){
-                        cout << "gap 10" << endl;
+                        //cout << "gap 10" << endl;
                         stageMoving = 0;
                         hardMoving = 1;
                     }
@@ -125,6 +125,8 @@ namespace automotive {
                     else if(sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0) {
                         gap_size = 0;
                     }
+                    //End of gap finding code
+
                     }
 
 

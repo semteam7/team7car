@@ -54,8 +54,9 @@ add_subdirectory(lanefollower)
 add_subdirectory(lanedetector)
 add_subdirectory(VCR)
 add_subdirectory(proxy)
-#add_subdirectory(sidewaysparker)
+add_subdirectory(sidewaysparker)
 add_subdirectory(serialvehicle)
+
 ###########################################################################
 # Enable CPack to create .deb and .rpm.
 #

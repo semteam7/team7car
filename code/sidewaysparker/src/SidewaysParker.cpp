@@ -102,7 +102,6 @@ namespace automotive {
                     //New code for finding a gap
                     if((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 0)
                             && (absPathEnd == (absPathStart + 1))) {
-                        absPathStart = vd.getAbsTraveledPath();
                         gap_size++;
                     }
 
@@ -131,7 +130,7 @@ namespace automotive {
 
 
                 if ((stageMoving > 1) && (stageMoving < 40)) {
-                    cout << "normal parking " << endl;
+                    //cout << "normal parking " << endl;
                     // Move slightly forward.
                     vc.setSpeed(.4);
                     vc.setSteeringWheelAngle(0);
@@ -167,9 +166,11 @@ namespace automotive {
                             || (sbd.getValueForKey_MapOfDistances(INFRARED_REAR) < 0))) {
                         vc.setSpeed(-0.3);
                         vc.setSteeringWheelAngle(-25);
-                        cout << sbd.getValueForKey_MapOfDistances(INFRARED_REAR) << " infrared " << endl;
+                       // cout << sbd.getValueForKey_MapOfDistances(INFRARED_REAR) << " infrared " << endl;
                     }
                     else{
+                      //  cout << "stop " << endl;
+                        vc.setSteeringWheelAngle(0);
                         vc.setSpeed(0);
                     }
                 }
@@ -178,34 +179,34 @@ namespace automotive {
                 if (hardMoving >= 1){
                     if ((hardMoving > 0) && (hardMoving < 40)) {
                         // Move slightly forward.
-                        cout << "hardmoving 1" << endl;
+                       // cout << "hardmoving 1" << endl;
                         vc.setSpeed(.4);
                         vc.setSteeringWheelAngle(0);
                         hardMoving++;
                     }
                     if ((hardMoving >= 40) && (hardMoving < 45)) {
-                        cout << "hardmoving 2" << endl;
+                       // cout << "hardmoving 2" << endl;
                         // Stop.
                         vc.setSpeed(0);
                         vc.setSteeringWheelAngle(0);
                         hardMoving++;
                     }
                     if ((hardMoving >= 45) && (hardMoving < 85)) {
-                        cout << "hardmoving 3" << endl;
+                       // cout << "hardmoving 3" << endl;
                         // Backwards, steering wheel to the right.
                         vc.setSpeed(-1.6);
                         vc.setSteeringWheelAngle(25);
                         hardMoving++;
                     }
                     if ((hardMoving >= 85) && (hardMoving < 220)) {
-                        cout << "hardmoving 4" << endl;
+                       // cout << "hardmoving 4" << endl;
                         // Backwards, steering wheel to the left.
                         vc.setSpeed(-.175);
                         vc.setSteeringWheelAngle(-25);
                         hardMoving++;
                     }
                     if (hardMoving >= 220) {
-                        cout << "hardmoving 5" << endl;
+                        //cout << "hardmoving 5" << endl;
                         // Stop.
                         vc.setSpeed(0);
                         vc.setSteeringWheelAngle(0);

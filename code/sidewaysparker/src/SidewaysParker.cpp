@@ -91,7 +91,7 @@ namespace automotive {
                 cout << sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) << " infrared rear right" << endl;
                 cout << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) << " ultrasonic front center" << endl;
                 cout << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) << " ultrasonic front right" << endl;
-
+                cout << vd.getAbsTraveledPath() << " Traveled path" << endl;
 
 
                 if((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 1

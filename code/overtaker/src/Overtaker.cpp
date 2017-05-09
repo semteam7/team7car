@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include <iostream>
 #include <cstdio>
 #include <cmath>
 
@@ -87,6 +88,22 @@ namespace automotive {
 
                 // Create vehicle control data.
                 VehicleControl vc;
+
+                // bool yek = false;
+                // bool du = false;
+
+                // if(yek){
+
+                //     vc.setSpeed(1.5);
+                //     vc.setSteeringWheelAngle(15);
+                //     du = true;
+                // }
+                // if (du)
+                // {
+
+                //     vc.setSpeed(2);
+                //     vc.setSteeringWheelAngle(-15);
+                // }
 
                 // Moving state machine.
                 if (stageMoving == FORWARD) {
@@ -213,6 +230,16 @@ namespace automotive {
                     }
                 }
 
+
+                cout << "US front center: " << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) << endl;
+                cout << "US front Right: " << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) << endl;
+                cout << "IR front RIGHT: " << sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) << endl;
+                cout << "IR rear Right: " << sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) << endl;
+                cout << "Speed: " << vc.getSpeed() << endl;
+                cout << "Angle: " << vc.getSteeringWheelAngle() << endl;
+
+
+                            
                 // Create container for finally sending the data.
                 Container c(vc);
                 // Send container.

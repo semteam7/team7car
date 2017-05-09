@@ -70,8 +70,7 @@ void SerialVehicle::nextContainer(odcore::data::Container &c) {
     if (c.getDataType() == VehicleControl::ID()) {
             vc_count++;
             cout << "Message count: " <<vc_count << endl;
-            if(vc_count % 15 == 0)
-            {
+           
                 VehicleControl vc = c.getData<VehicleControl> ();
 
                 cout << "VC speed: " <<vc.getSpeed() << " VC angle: " << vc.getSteeringWheelAngle() << endl;
@@ -82,7 +81,7 @@ void SerialVehicle::nextContainer(odcore::data::Container &c) {
 
                 m_serial->send(command);
                 cout << "Sent command: " << command;
-            }
+            
         }
 }
 

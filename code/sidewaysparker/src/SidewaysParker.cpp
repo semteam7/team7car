@@ -119,9 +119,9 @@ namespace automotive {
                         absPathEnd = vd.getAbsTraveledPath();
                         vc.setSpeed(2);
                         vc.setSteeringWheelAngle(0);
-                        //cout << "path end " << absPathEnd << endl;
-                        //cout << "path start " << absPathStart << endl;
-                        //cout << "gap_size  " << gap_size << endl;
+                        cout << "path end " << absPathEnd << endl;
+                        cout << "path start " << absPathStart << endl;
+                        cout << "gap_size  " << gap_size << endl;
 
 
 
@@ -129,14 +129,15 @@ namespace automotive {
                         if ((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 0)
                             && (absPathEnd == (absPathStart + 1))) {
                             gap_size++;
+
                         }
 
                         if (gap_size >= 7
                             && (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0)) {
-                            //cout << "gap 7 " << endl;
+                            cout << "gap 7 " << endl;
                             stageMoving = 2;
                         } else if (gap_size >= 10) {
-                            //cout << "gap 10" << endl;
+                            cout << "gap 10" << endl;
                             stageMoving = 0;
                             hardMoving = 1;
                         } else if (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 0) {
@@ -149,24 +150,28 @@ namespace automotive {
                     }
 
 
-                    if ((stageMoving > 1) && (stageMoving < 40)) {
-                        //cout << "normal parking " << endl;
+                    if ((stageMoving > 1) && (stageMoving < 80)) {
+                        cout << "normal parking " << endl;
                         // Move slightly forward.
                         vc.setSpeed(.4);
                         vc.setSteeringWheelAngle(0);
                         stageMoving++;
-                    } else if ((stageMoving == 40)) {
+                    } else if ((stageMoving == 80)) {
+                        cout << "stopping " << endl;
+
                         vc.setSpeed(0);
                         vc.setSteeringWheelAngle(0);
                         stageMoving++;
                     }
 
 
-                    if (stageMoving == 41) {
+                    if (stageMoving == 81) {
                         if ((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 2.1)
                             || (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 0)) {
                             vc.setSpeed(-1.3);
                             vc.setSteeringWheelAngle(25);
+                            cout << "turning " << endl;
+
                         }
                             /*  else if ((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0)){
                                   vc.setSteeringWheelAngle(0);
@@ -177,7 +182,7 @@ namespace automotive {
                     }
 
 
-                    if (stageMoving == 42) {
+                    if (stageMoving == 82) {
                         if (((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 1)
                              || (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 0))
                             && ((sbd.getValueForKey_MapOfDistances(INFRARED_REAR) > 2)

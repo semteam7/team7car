@@ -145,17 +145,19 @@ void readSensors(){
   sendSensorData();
 }
 
-float readIRSensor(int pin)
+char readIRSensor(int pin)
 {
   if(MOCK) return 4;
   
   float v = analogRead(pin) * (5.0 / 1023.0); //scale analog read value to voltage
   float d = IR_DISTANCE_FACTOR / v;           //get distance in centimeters
-  if(d > IR_DISTANCE_CUTOFF) { return 2; }   //if above cutoff, return -1
-  return d;
+  if(d > IR_DISTANCE_CUTOFF) { return 2; }    //if above cutoff, return -1
+
+
+  return ((char) d) + 31;
 }
 
-float readUSSensor(int address)
+char readUSSensor(int address)
 {  
   if(MOCK) return 0;
   
@@ -179,21 +181,16 @@ float readUSSensor(int address)
 
   range = (highByte << 8) + lowByte;
   
-  return range;
+  return ((char) range) + 31;
 }
 
 
 void sendSensorData(){
   String sensorData = "S";
-  sensorData += ":";
   sensorData += readIRSensor(IR_1);
-  sensorData += ":";
   sensorData += readIRSensor(IR_2);
-  sensorData += ":";
   sensorData += readIRSensor(IR_3);
-  sensorData += ":";
   sensorData += readUSSensor(US_1);
-  sensorData += ":";
   sensorData += readUSSensor(US_2);
   
   

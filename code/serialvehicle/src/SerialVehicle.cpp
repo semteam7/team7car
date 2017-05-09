@@ -84,7 +84,6 @@ void SerialVehicle::nextContainer(odcore::data::Container &c) {
                 cout << "Sent command: " << command;
             }
         }
-
 }
 
 void SerialVehicle::reconnect()

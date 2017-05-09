@@ -49,32 +49,27 @@ namespace team7 {
         cout << "End is " << end << endl;
         if( start > -1 && end > start)
         {
-            strcpy(reading, m_received.substr(start, end - start).c_str());
-            cout << "Reading " << reading << endl;
-            double values[5];
-            char *val = std::strtok(reading, ":");
-            val = std::strtok(NULL, ":");
-
-            int val_count = 0;
-            while(val && val_count < 5){
-                values[val_count] = atof(val);
-                val_count++;
-                cout << "val" << val << endl;
-                val = std::strtok(NULL, ":"); // skip one
+            if((end - start) < 5)
+            {
+                cout << "wrong message length, skipping" << endl;
+                return;
             }
 
-            if(val_count < 4) {
-                cerr << "Bad SensorBoardData, skipping" << endl;
-                return;
+            strcpy(reading, m_received.substr(start, end - start).c_str());
+            cout << "Reading " << reading << endl;
+            int values[5];
+
+            for (int i=0;i<5;i++){
+                values[i] = ((int) reading[i+1]) - 31;
             }
 
             m_sensorboard_data.setNumberOfSensors(5);
             std::map<uint32_t, double> distances{
-                    {1, values[0]},
+                    {0, values[0]},
+                    {1, values[2]},
                     {2, values[1]},
-                    {3, values[2]},
-                    {4, values[3]},
-                    {5, values[4]}
+                    {3, values[3]},
+                    {4, values[4]}
             };
             m_sensorboard_data.setMapOfDistances(distances);
             Container c(m_sensorboard_data);

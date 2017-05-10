@@ -62,14 +62,17 @@ class SensorBoardFilter : public odcore::base::module::DataTriggeredConferenceCl
 
     //Kalman components
     double x=0; //output value
-    double q=4; // process noise
-    double p=1023; //estimation error
-    double r=2; //measurement noise
     double kg=0; //kalman gain
+    double p=1023; //estimation error
+    //Fiddle with these
+    double q=4; // process noise
+    double r=2; //sensor noise
 
     double getKalmanValue(double measurement){
+      //prediction part
       p = p + q;
 
+      //measurement part
       kg = p / (p+r);
       x = x + kg * (measurement - x);
       p = (1 - kg) * p;

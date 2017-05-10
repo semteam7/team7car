@@ -90,13 +90,14 @@ void SensorBoardFilter::nextContainer(odcore::data::Container &c) {
                 values[1] = getKalmanValue(irRear);
 
 
-                m_sensorboard_data.setNumberOfSensors(5);
+                m_sensorboard_data.setNumberOfSensors(6);
                 std::map<uint32_t, double> distances{
                       {0, values[0]},
                       {1, values[1]},
                       {2, values[2]},
                       {3, values[3]},
-                      {4, values[4]}
+                      {4, values[4]},
+                      {5, usFrontcenter}
                 };
                 m_sensorboard_data.setMapOfDistances(distances);
                 Container c2(m_sensorboard_data);

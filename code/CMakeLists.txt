@@ -56,7 +56,7 @@ add_subdirectory(VCR)
 add_subdirectory(proxy)
 add_subdirectory(sidewaysparker)
 add_subdirectory(serialvehicle)
-
+add_subdirectory(sensorboardfilter)
 ###########################################################################
 # Enable CPack to create .deb and .rpm.
 #

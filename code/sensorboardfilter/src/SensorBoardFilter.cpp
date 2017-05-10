@@ -41,7 +41,8 @@ using namespace odcore::data;
 using namespace odcore::data::image;
 
 SensorBoardFilter::SensorBoardFilter(const int &argc, char **argv)
-    : DataTriggeredConferenceClientModule(argc, argv, "sensorboardfilter"){}
+    : DataTriggeredConferenceClientModule(argc, argv, "sensorboardfilter"),
+    m_sensorboard_data(){}
 
 SensorBoardFilter::~SensorBoardFilter() {}
 
@@ -54,10 +55,57 @@ void SensorBoardFilter::tearDown() {
     // Release serial port
     cout << "teardown" << endl;
 }
+/**
+Read sensorboarddata from serial, start with collecting the last 10 messages,
+calculate the average value and pass this on to the waiting movement module
 
+Test if 10 is too many or too few messages in correlation with performance
+*/
 void SensorBoardFilter::nextContainer(odcore::data::Container &c) {
-    if (c.getDataType() == odcore::data::image::SharedImage::ID()) {
-            cout << "woop" << endl;
+    if (c.getDataType() == SensorBoardData::ID()) {
+
+
+            rsbd_count++;
+            cout << "Message count: " <<rsbd_count << endl;
+            SensorBoardData rsbd = c.getData<SensorBoardData>();
+
+            usFrontcenter = usFrontcenter + rsbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER);
+            usFrontright = usFrontright + rsbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT);
+            irFrontright = irFrontright + rsbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
+            irRearright = irRearright + rsbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
+            irRear = irRear + rsbd.getValueForKey_MapOfDistances(INFRARED_REAR);
+
+
+            if(rsbd_count % rsbd_limit == 0){
+                values[3] = usFrontcenter = usFrontcenter / rsbd_limit;
+                values[4] = usFrontright = usFrontright / rsbd_limit;
+                values[0] = irFrontright = irFrontright / rsbd_limit;
+                values[2] = irRearright = irRearright / rsbd_limit;
+                values[1] = irRear = irRear / rsbd_limit;
+
+                m_sensorboard_data.setNumberOfSensors(5);
+                std::map<uint32_t, double> distances{
+                      {1, values[0]},
+                      {2, values[1]},
+                      {3, values[2]},
+                      {4, values[3]},
+                      {5, values[4]}
+                };
+                m_sensorboard_data.setMapOfDistances(distances);
+                Container c2(m_sensorboard_data);
+
+                usFrontcenter = 0;
+                usFrontright = 0;
+                irFrontright = 0;
+                irRearright = 0;
+                irRear = 0;
+                cout << "usFC " << m_sensorboard_data.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) << endl;
+                cout << "usFR " << m_sensorboard_data.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) << endl;
+                cout << "irFR " << m_sensorboard_data.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) << endl;
+                cout << "irRR " << m_sensorboard_data.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) << endl;
+                cout << "irR  " << m_sensorboard_data.getValueForKey_MapOfDistances(INFRARED_REAR) << endl;
+
+            }
         }
     }
 }

@@ -49,7 +49,7 @@ set(LIBRARIES ${OPENDAVINCI_LIBRARIES})
 # Add subfolders with sources.
 add_subdirectory(perception)
 add_subdirectory(control)
-add_subdirectory(overtaking)
+add_subdirectory(overtaker)
 add_subdirectory(lanefollower)
 add_subdirectory(lanedetector)
 add_subdirectory(VCR)
@@ -129,4 +129,3 @@ IF(    (UNIX)
 ENDIF()
 
 INCLUDE(CPack)
-

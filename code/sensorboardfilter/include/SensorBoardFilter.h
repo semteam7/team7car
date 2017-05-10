@@ -11,6 +11,7 @@
 #include <opendavinci/odcore/wrapper/SharedMemory.h>
 
 #include <automotivedata/GeneratedHeaders_AutomotiveData.h>
+#include <odvdscaledcarsdatamodel/GeneratedHeaders_ODVDScaledCarsDataModel.h>
 
 namespace scaledcars {
 namespace team7 {
@@ -20,6 +21,7 @@ using namespace automotive::miniature;
 using namespace odcore;
 using namespace odcore::data;
 using namespace odcore::io::conference;
+using namespace chalmersrevere::scaledcars;
 
 class SensorBoardFilter : public odcore::base::module::DataTriggeredConferenceClientModule {
    private:
@@ -40,6 +42,7 @@ class SensorBoardFilter : public odcore::base::module::DataTriggeredConferenceCl
 
     virtual void nextContainer(odcore::data::Container &c);
 
+
    private:
     void setUp();
     void tearDown();
@@ -56,6 +59,24 @@ class SensorBoardFilter : public odcore::base::module::DataTriggeredConferenceCl
     const double ULTRASONIC_FRONT_CENTER = 3;
     const double ULTRASONIC_FRONT_RIGHT = 4;
     double values[5];
+
+    //Kalman components
+    double x=0; //output value
+    double q=4; // process noise
+    double p=1023; //estimation error
+    double r=2; //measurement noise
+    double kg=0; //kalman gain
+
+    double getKalmanValue(double measurement){
+      p = p + q;
+
+      kg = p / (p+r);
+      x = x + kg * (measurement - x);
+      p = (1 - kg) * p;
+
+      return x;
+    }
+
 };
 }
 } // scaledcars::perception

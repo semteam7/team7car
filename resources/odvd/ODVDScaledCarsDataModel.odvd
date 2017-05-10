@@ -20,3 +20,7 @@ message chalmersrevere.scaledcars.ExampleMessage [id = 801] {
     uint32 field1   [id = 1];
 }
 
+message chalmersrevere.scaledcars.RawSensorBoardData [id = 802] {
+    uint32 numberOfSensors [id = 1];
+    map<uint32, double> distances [id = 2];
+}

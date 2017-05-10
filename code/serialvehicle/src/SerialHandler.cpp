@@ -10,6 +10,7 @@
 #include "SerialHandler.h"
 
 #include <automotivedata/GeneratedHeaders_AutomotiveData.h>
+#include "odvdscaledcarsdatamodel/GeneratedHeaders_ODVDScaledCarsDataModel.h"
 
 #include "opendavinci/odcore/io/conference/ContainerConference.h"
 #include "opendavinci/odcore/data/Container.h"

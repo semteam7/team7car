@@ -6,7 +6,7 @@
 //Borrowed from examples
 #define GAIN_REGISTER 0x09
 #define LOCATION_REGISTER 0x8C
-#define MOCK false
+#define MOCK true
 
 //Digital
 int SERVO_CONTROL_PIN = 6;
@@ -75,11 +75,12 @@ bool safetyStop = false;
 long lastRead = 0;
 void loop() {
   readFromSerial();
+  //Serial.println("in loop");
 
   if((lastRead + 100) < millis())
   {
     lastRead = millis();
-    readSensors();
+    sendSensorData();
   }
   
 }
@@ -91,7 +92,6 @@ void readFromSerial() {
   float carAngle;
   
   if(Serial.available()){
-    Serial.setTimeout(100);
     command = Serial.readStringUntil('\n');
     int startIndex = command.indexOf('C');
     if(startIndex == -1){
@@ -111,12 +111,14 @@ void readFromSerial() {
     carSpeed = command.substring(1, delimiter).toFloat();
     carAngle = command.substring(delimiter+1).toFloat();
     //digitalWrite(ledPin, HIGH);
+//    Serial.println("Executing command");
     executeVehicleCommand(carSpeed, carAngle);
+//    Serial.println("Executed command");
   }
 
 }
 
-boolean serialDebug = false;
+boolean serialDebug = true;
 void error(String reason){
   if(serialDebug)
   {
@@ -133,16 +135,10 @@ void executeVehicleCommand(float carSpeed, float carAngle)
     else if (carAngle < -1.5){
       carAngle = (-1.5);
     }
-    
     carAngle = (carAngle * 57.3)  + 90;
     
     esc.write(carSpeed);
     steering.write(carAngle);
-}
-
-void readSensors(){
-  //Read IR Sensors
-  sendSensorData();
 }
 
 char readIRSensor(int pin)
@@ -159,26 +155,27 @@ char readIRSensor(int pin)
 
 char readUSSensor(int address)
 {  
-  if(MOCK) return 0;
+  if(MOCK) return 3;
   
   int range = 0; 
-  
+
   Wire.beginTransmission(address);                
   Wire.write(0x00);                               // start command
   Wire.write(0x51);                               // start ranging in cm
   Wire.endTransmission();
-  
+ 
   delay(70);                                      // Wait for ranging to be complete
   
+ 
   Wire.beginTransmission(address);            
   Wire.write(0x02);                               // request ranging data
   Wire.endTransmission();
+
   
   Wire.requestFrom(address, 2);                   // request 2 bytes from SRF module
   while(Wire.available() < 2);                   
   byte highByte = Wire.read();                          // Get high byte
   byte lowByte = Wire.read();                           // Get low byte
-
   range = (highByte << 8) + lowByte;
   
   return ((char) range) + 31;
@@ -192,7 +189,6 @@ void sendSensorData(){
   sensorData += readIRSensor(IR_3);
   sensorData += readUSSensor(US_1);
   sensorData += readUSSensor(US_2);
-  
   
   Serial.println(sensorData);
 }

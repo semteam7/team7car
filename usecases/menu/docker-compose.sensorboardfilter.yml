@@ -1,0 +1,12 @@
+version: '2'
+
+services:
+        sensorboardfilter:
+                build: .
+                network_mode: "host"
+                volumes:
+                        - ${conf}:/opt/configuration
+                network_mode: host
+                ipc: host
+                command: /opt/opendlv.scaledcars/bin/sensorboardfilter --freq=$FREQ --cid=111 --verbose=1
+                working_dir: /opt/configuration

@@ -20,6 +20,8 @@
 
 #include <automotivedata/GeneratedHeaders_AutomotiveData.h>
 
+#include "odvdscaledcarsdatamodel/GeneratedHeaders_ODVDScaledCarsDataModel.h"
+
 
 namespace odcore { namespace io { namespace conference { class ContainerConference; } } }
 
@@ -31,6 +33,7 @@ namespace scaledcars {
         using namespace odcore;
         using namespace odcore::data;
         using namespace odcore::io::conference;
+        using namespace chalmersrevere::scaledcars;
 
         class SerialHandler : public odcore::io::StringListener
         {
@@ -43,7 +46,7 @@ namespace scaledcars {
             SerialHandler (odcore::io::conference::ContainerConference &);
             stringbuf m_receive_sb;
             iostream m_receive_buffer;
-            SensorBoardData m_sensorboard_data;
+            RawSensorBoardData m_sensorboard_data;
             ContainerConference &m_conference;
             string m_received;
             virtual void nextString(const string &s);

@@ -81,7 +81,7 @@ void SensorBoardFilter::nextContainer(odcore::data::Container &c) {
             irRearright = rsbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
             irRear = rsbd.getValueForKey_MapOfDistances(INFRARED_REAR);
 
-            if(rsbd_count%3 == 0){
+          //  if(rsbd_count%3 == 0){
 
                 values[3] = getKalmanValue(usFrontcenter);
                 values[4] = getKalmanValue(usFrontright);
@@ -109,7 +109,7 @@ void SensorBoardFilter::nextContainer(odcore::data::Container &c) {
                 cout << "irFR " << m_sensorboard_data.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) << endl;
                 cout << "irRR " << m_sensorboard_data.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) << endl;
                 cout << "irR  " << m_sensorboard_data.getValueForKey_MapOfDistances(INFRARED_REAR) << endl;
-              }
+            //  }
         }
     }
 }

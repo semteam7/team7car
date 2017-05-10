@@ -79,13 +79,13 @@ set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
 FILE(GLOB_RECURSE thisproject-sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 ADD_LIBRARY (${PROJECT_NAME}-static STATIC ${thisproject-sources})
 ADD_EXECUTABLE (${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/apps/${PROJECT_NAME}.cpp")
-TARGET_LINK_LIBRARIES (${PROJECT_NAME} ${PROJECT_NAME}-static ${LIBRARIES}) 
+TARGET_LINK_LIBRARIES (${PROJECT_NAME} ${PROJECT_NAME}-static ${LIBRARIES})
 
 ###############################################################################
 # Enable CxxTest for all available testsuites.
 IF(CXXTEST_FOUND)
     FILE(GLOB thisproject-testsuites "${CMAKE_CURRENT_SOURCE_DIR}/testsuites/*.h")
-    
+
     FOREACH(testsuite ${thisproject-testsuites})
         STRING(REPLACE "." ";" testsuite-list ${testsuite})
 
@@ -120,5 +120,4 @@ INSTALL(TARGETS ${PROJECT_NAME}-static DESTINATION lib COMPONENT scaledcars-soft
 INSTALL(FILES man/${PROJECT_NAME}.1 DESTINATION man/man1 COMPONENT scaledcars-software)
 
 # Install header files.
-INSTALL(DIRECTORY "include" DESTINATION include/serialvehicle COMPONENT scaledcars-software)
-
+INSTALL(DIRECTORY "include" DESTINATION include/sensorboardfilter COMPONENT scaledcars-software)

@@ -76,7 +76,13 @@ void SensorBoardFilter::nextContainer(odcore::data::Container &c) {
             cout << "rsbd irR:  " << rsbd.getValueForKey_MapOfDistances(INFRARED_REAR) << endl;
 
             usFrontcenter = rsbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER);
+            if(usFrontcenter > 59){
+              usFrontcenter = 0;
+            }
             usFrontright = rsbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT);
+            if(usFrontright > 59){
+              usFrontright = 0;
+            }
             irFrontright = rsbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
             irRearright = rsbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
             irRear = rsbd.getValueForKey_MapOfDistances(INFRARED_REAR);

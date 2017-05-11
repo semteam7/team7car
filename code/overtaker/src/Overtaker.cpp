@@ -106,11 +106,24 @@ namespace automotive {
                 // }
 
                 // Moving state machine.
+
+
+//                vc.setSteeringWheelAngle(-25);
+//                cout << "Angle1: " << vc.getSteeringWheelAngle() << endl;
+//                vc.setSteeringWheelAngle(25);
+//                cout << "Angle2: " << vc.getSteeringWheelAngle() << endl;
+//                vc.setSteeringWheelAngle(-25);
+//                cout << "Angle3: " << vc.getSteeringWheelAngle() << endl;
+//                vc.setSteeringWheelAngle(25);
+//                cout << "Angle4: " << vc.getSteeringWheelAngle() << endl;
+//
+
+
                 if (stageMoving == FORWARD) {
                     // Go forward.
                     vc.setSpeed(2);
                     vc.setSteeringWheelAngle(0);
-
+                    cout<<"moves forward"<<endl;
                     stageToRightLaneLeftTurn = 15;
                     stageToRightLaneRightTurn = 0;
                 }
@@ -118,36 +131,44 @@ namespace automotive {
                     // Move to the left lane: Turn left part until both IRs see something.
                     vc.setSpeed(1);
                     vc.setSteeringWheelAngle(-25);
+                    cout<<"overtaking, turning left"<<endl;
 
                     // State machine measuring: Both IRs need to see something before leaving this moving state.
                     stageMeasuring = HAVE_BOTH_IR;
+                    cout<<"IR scanning for objects"<<endl;
 
                     stageToRightLaneRightTurn++;
+                    cout<<"counter is one" <<endl;
                 }
                 else if (stageMoving == TO_LEFT_LANE_RIGHT_TURN) {
                     // Move to the left lane: Turn right part until both IRs have the same distance to obstacle.
                     vc.setSpeed(1);
                     vc.setSteeringWheelAngle(25);
-
+                    cout<<"car is turning right on the left lane"<<endl;
                     // State machine measuring: Both IRs need to have the same distance before leaving this moving state.
                     stageMeasuring = HAVE_BOTH_IR_SAME_DISTANCE;
 
                     stageToRightLaneLeftTurn++;
+                    cout<<"counter leftturn++ 16 to be straight"<<endl;
                 }
                 else if (stageMoving == CONTINUE_ON_LEFT_LANE) {
                     // Move to the left lane: Passing stage.
                     vc.setSpeed(2);
                     vc.setSteeringWheelAngle(0);
+                    cout<<"keep moving on the left lane straight forward"<<endl;
 
                     // Find end of object.
                     stageMeasuring = END_OF_OBJECT;
+                    cout<<"end of object"<<endl;
                 }
                 else if (stageMoving == TO_RIGHT_LANE_RIGHT_TURN) {
                     // Move to the right lane: Turn right part.
                     vc.setSpeed(1.5);
                     vc.setSteeringWheelAngle(25);
+                    cout<<"turn back to the right lane"<<endl;
 
                     stageToRightLaneRightTurn--;
+                    cout<<"counter -- right turn counter==0"<<endl;
                     if (stageToRightLaneRightTurn == 0) {
                         stageMoving = TO_RIGHT_LANE_LEFT_TURN;
                     }
@@ -239,7 +260,7 @@ namespace automotive {
                 cout << "Angle: " << vc.getSteeringWheelAngle() << endl;
 
 
-                            
+
                 // Create container for finally sending the data.
                 Container c(vc);
                 // Send container.

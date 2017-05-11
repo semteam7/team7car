@@ -40,9 +40,9 @@
 namespace automotive {
     namespace miniature {
 
-  	
-		IplImage* greyImage; // grey image from original image
-    	IplImage* cannyImage; // Canny image from grey image
+    
+        IplImage* greyImage; // grey image from original image
+        IplImage* cannyImage; // Canny image from grey image
 
 
         using namespace std;
@@ -61,99 +61,98 @@ namespace automotive {
             m_previousTime(),
             m_eSum(0),
             m_eOld(0),
-            m_messagecount(0),
             m_vehicleControl() {}
 
         LaneFollower::~LaneFollower() {}
 
         void LaneFollower::setUp() {
-	        // This method will be call automatically _before_ running body().
-	        if (m_debug) {
-		        // Create an OpenCV-window.
-		        cvNamedWindow("WindowShowImage", CV_WINDOW_AUTOSIZE);
-		        cvMoveWindow("WindowShowImage", 300, 100);
-	        }
+            // This method will be call automatically _before_ running body().
+            if (m_debug) {
+                // Create an OpenCV-window.
+                cvNamedWindow("WindowShowImage", CV_WINDOW_AUTOSIZE);
+                cvMoveWindow("WindowShowImage", 300, 100);
+            }
         }
 
         void LaneFollower::tearDown() {
-	        // This method will be call automatically _after_ return from body().
-	        if (m_image != NULL) {
-		        cvReleaseImage(&m_image);
-                cvReleaseImage(&cannyImage);
+            // This method will be call automatically _after_ return from body().
+            if (m_image != NULL) {
+                cvReleaseImage(&m_image);
+            }
 
-	        }
-
-	        if (m_debug) {
-		        cvDestroyWindow("Original");
-                cvDestroyWindow("Canny");
-	        }
+            if (m_debug) {
+                cvDestroyWindow("WindowShowImage");
+            }
         }
 
         bool LaneFollower::readSharedImage(Container &c) {
-	        bool retVal = false;
+            bool retVal = false;
 
-	        if (c.getDataType() == odcore::data::image::SharedImage::ID()) {
-		        SharedImage si = c.getData<SharedImage> ();
+            if (c.getDataType() == odcore::data::image::SharedImage::ID()) {
+                SharedImage si = c.getData<SharedImage> ();
 
-		        // Check if we have already attached to the shared memory.
-		        if (!m_hasAttachedToSharedImageMemory) {
-			        m_sharedImageMemory
-					        = odcore::wrapper::SharedMemoryFactory::attachToSharedMemory(
-							        si.getName());
-		        }
+                // Check if we have already attached to the shared memory.
+                if (!m_hasAttachedToSharedImageMemory) {
+                    m_sharedImageMemory
+                            = odcore::wrapper::SharedMemoryFactory::attachToSharedMemory(
+                                    si.getName());
+                }
 
-		        // Check if we could successfully attach to the shared memory.
-		        if (m_sharedImageMemory->isValid()) {
-			        // Lock the memory region to gain exclusive access using a scoped lock.
+                // Check if we could successfully attach to the shared memory.
+                if (m_sharedImageMemory->isValid()) {
+                    // Lock the memory region to gain exclusive access using a scoped lock.
                     Lock l(m_sharedImageMemory);
-			        const uint32_t numberOfChannels = 3;
-			        // For example, simply show the image.
-			        if (m_image == NULL) {
-				        m_image = cvCreateImage(cvSize(si.getWidth(), si.getHeight()), IPL_DEPTH_8U, numberOfChannels);
-			        }
+                    const uint32_t numberOfChannels = 3;
+                    // For example, simply show the image.
+                    if (m_image == NULL) {
+                        m_image = cvCreateImage(cvSize(si.getWidth(), si.getHeight()), IPL_DEPTH_8U, numberOfChannels);
+                    }
 
-			        // Copying the image data is very expensive...
-			        if (m_image != NULL) {
-				        memcpy(m_image->imageData,
-						       m_sharedImageMemory->getSharedMemory(),
-						       si.getWidth() * si.getHeight() * numberOfChannels);
-			        }
+                    // Copying the image data is very expensive...
+                    if (m_image != NULL) {
+                        memcpy(m_image->imageData,
+                               m_sharedImageMemory->getSharedMemory(),
+                               si.getWidth() * si.getHeight() * numberOfChannels);
+                    }
 
-			        // Mirror the image.
-			        cvFlip(m_image, 0, -1);
+                    // Mirror the image.
+                    cvFlip(m_image, 0, -1);
 
-			        retVal = true;
-		        }
-	        }
-	        return retVal;
+                    retVal = true;
+                }
+            }
+            return retVal;
         }
 
 
 
         void LaneFollower::canny(){
 
+            // stringstream ss;
+           //  ss << "desiredSteering: " << desiredSteering * 53;
+           //  cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(110, 200, 140));
+
+
+
+
           greyImage = cvCreateImage( cvSize(m_image->width, m_image->height), IPL_DEPTH_8U, 1 );
-     	  cvCvtColor( m_image, greyImage, CV_BGR2GRAY );
+          cvCvtColor( m_image, greyImage, CV_BGR2GRAY );
 
          cannyImage = cvCreateImage(cvGetSize(m_image), IPL_DEPTH_8U, 1);
-                                                    
-                                                   //5  5
-        cvSmooth(greyImage, cannyImage, CV_GAUSSIAN, 5, 5);
 
-        							   //50, 150, 3
-         cvCanny(cannyImage, cannyImage, 50, 150, 3);
+                                     //50, 150, 3
+        cvCanny(greyImage, cannyImage, 50, 150, 3);
 
         }
 
 
         void LaneFollower::processImage() {
-
             static bool useRightLaneMarking = true;
             double e = 0;
 
 
-            const int32_t CONTROL_SCANLINE = 352; // calibrated length to right: 280px
-            const int32_t distance = 160;
+            const int32_t CONTROL_SCANLINE = 462; // calibrated length to right: 280px
+            const int32_t distance = 280;
 
             TimeStamp beforeImageProcessing;
             for(int32_t y = cannyImage->height - 8; y > cannyImage->height * .6; y -= 10) {
@@ -163,8 +162,8 @@ namespace automotive {
                 left.y = y;
                 left.x = -1;
                 for(int x = cannyImage->width/2; x > 0; x--) {
-		            pixelLeft = cvGet2D(cannyImage, y, x);
-		            if (pixelLeft.val[0] >= 200) {
+                    pixelLeft = cvGet2D(cannyImage, y, x);
+                    if (pixelLeft.val[0] >= 200) {
                         left.x = x;
                         break;
                     }
@@ -176,37 +175,33 @@ namespace automotive {
                 right.y = y;
                 right.x = -1;
                 for(int x = cannyImage->width/2; x < cannyImage->width; x++) {
-		            pixelRight = cvGet2D(cannyImage, y, x);
-		            if (pixelRight.val[0] >= 200) {
+                    pixelRight = cvGet2D(cannyImage, y, x);
+                    if (pixelRight.val[0] >= 200) {
                         right.x = x;
                         break;
                     }
                 }
 
+                if (m_debug) {
+                    if (left.x > 0) {
+                        CvScalar green = CV_RGB(0, 255, 0);
+                        cvLine(m_image, cvPoint(m_image->width/2, y), left, green, 1, 8);
 
+                        stringstream sstr;
+                        sstr << (m_image->width/2 - left.x);
+                        cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 - 100, y - 2), &m_font, green);
+                    }
+                    if (right.x > 0) {
+                        CvScalar red = CV_RGB(255, 0, 0);
+                        cvLine(m_image, cvPoint(m_image->width/2, y), right, red, 1, 8);
+
+                        stringstream sstr;
+                        sstr << (right.x - m_image->width/2);
+                        cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 + 100, y - 2), &m_font, red);
+                    }
+                }
 
                 if (y == CONTROL_SCANLINE) {
-
-                    if (m_debug) {
-                        if (left.x > 0) {
-                            CvScalar green = CV_RGB(0, 255, 0);
-                            cvLine(m_image, cvPoint(m_image->width/2, y), left, green, 1, 8);
-
-                            stringstream sstr;
-                            sstr << (m_image->width/2 - left.x);
-                            cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 - 100, y - 2), &m_font, green);
-                        }
-                        if (right.x > 0) {
-                            CvScalar red = CV_RGB(255, 0, 0);
-                            cvLine(m_image, cvPoint(m_image->width/2, y), right, red, 1, 8);
-
-                            stringstream sstr;
-                            sstr << (right.x - m_image->width/2);
-                            cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 + 100, y - 2), &m_font, red);
-                        }
-                    }
-
-
                     // Calculate the deviation error.
                     if (right.x > 0) {
                         if (!useRightLaneMarking) {
@@ -256,17 +251,9 @@ namespace automotive {
 //            const double Kd = 0;
 
             // The following values have been determined by Twiddle algorithm.
-//            m_messagecount++;
-//            cout << "MESSAGE COUNTER = " << m_messagecount << endl;
-
-             double Kp = m_kp;
-             double Ki = m_ki;
-             double Kd = m_kd;
-//
-//            if (m_messagecount % 500 == 0) {
-//                m_kp = Kp + 0.1;
-//                cout << "Kp = " << Kp << endl;
-//            }
+            const double Kp = 1.29;
+            const double Ki = 0.01;
+            const double Kd = 0.1;
 
             const double p = Kp * e;
             const double i = Ki * timeStep * m_eSum;
@@ -280,11 +267,9 @@ namespace automotive {
                 desiredSteering = y;
 
                 if (desiredSteering > 25.0) {
-                    cerr << "Steering out of range positive" << endl;
                     desiredSteering = 25.0;
                 }
                 if (desiredSteering < -25.0) {
-                    cerr << "Steering out of range negative" << endl;
                     desiredSteering = -25.0;
                 }
             }
@@ -299,27 +284,15 @@ namespace automotive {
 
             // Print DesiredSteering
             stringstream ss;
-            ss << "desiredSteering: " << desiredSteering << " : " << desiredSteering * 57.3 ;
-            cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(200, 0, 200));
+            ss << "desiredSteering: " << desiredSteering * 53;
+            cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(0, 0, 200));
 
-            stringstream s1;
-            s1 << "Kp: " << Kp;
-            cvPutText(m_image, s1.str().c_str(), cvPoint(20,60), &m_font, CV_RGB(0, 0, 200));
 
-            stringstream s2;
-            s2 << "Ki: " << Ki;
-            cvPutText(m_image, s2.str().c_str(), cvPoint(20,70), &m_font, CV_RGB(0, 0, 200));
 
-            stringstream s3;
-            s3 << "Kd: " << Kd;
-            cvPutText(m_image, s3.str().c_str(), cvPoint(20,80), &m_font, CV_RGB(0, 0, 200));
-
-            // Show resulting features.
+                    // Show resulting features.
             if (m_debug) {
                 if (m_image != NULL) {
-                    cvShowImage("Original", m_image); // original: m_image
-                    cvWaitKey(33);
-                    cvShowImage("Canny", cannyImage); // original: m_image
+                    cvShowImage("WindowShowImage", m_image); // original: m_image
                     cvWaitKey(33);
                 }
             }
@@ -328,9 +301,9 @@ namespace automotive {
         // This method will do the main data processing job.
         // Therefore, it tries to open the real camera first. If that fails, the virtual camera images from camgen are used.
         odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode LaneFollower::body() {
-	        // Get configuration data.
-	        KeyValueConfiguration kv = getKeyValueConfiguration();
-	        m_debug = kv.getValue<int32_t> ("lanefollower.debug") == 1;
+            // Get configuration data.
+            KeyValueConfiguration kv = getKeyValueConfiguration();
+            m_debug = kv.getValue<int32_t> ("lanefollower.debug") == 1;
 
             // Initialize fonts.
             const double hscale = 0.4;
@@ -359,52 +332,52 @@ namespace automotive {
 
             // State counter for dynamically moving back to right lane.
             int32_t stageToRightLaneRightTurn = 0;
-            int32_t stageToRightLaneLeftTurn = 0;
+            int32_t stageToRightLaneLeftTurn = 15;
 
             // Distance variables to ensure we are overtaking only stationary or slowly driving obstacles.
             double distanceToObstacle = 0;
             double distanceToObstacleOld = 0;
 
             // Overall state machine handler.
-	        while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-		        bool has_next_frame = false;
+            while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+                bool has_next_frame = false;
 
-		        // Get the most recent available container for a SharedImage.
-		        Container c = getKeyValueDataStore().get(odcore::data::image::SharedImage::ID());
+                // Get the most recent available container for a SharedImage.
+                Container c = getKeyValueDataStore().get(odcore::data::image::SharedImage::ID());
 
-		        if (c.getDataType() == odcore::data::image::SharedImage::ID()) {
-			        // Example for processing the received container.
-			        has_next_frame = readSharedImage(c);
-		        }
+                if (c.getDataType() == odcore::data::image::SharedImage::ID()) {
+                    // Example for processing the received container.
+                    has_next_frame = readSharedImage(c);
+                }
 
-		        // Process the read image and calculate regular lane following set values for control algorithm.
-		        if (true == has_next_frame) {
-		        	canny(); // Apply canny algorithm on the image
-			        processImage();
-		        }
+                // Process the read image and calculate regular lane following set values for control algorithm.
+                if (true == has_next_frame) {
+                    canny(); // Apply canny algorithm on the image
+                    processImage();
+                }
 
 
                 // Overtaking part.
                 {
-	                // 1. Get most recent vehicle data:
-	                Container containerVehicleData = getKeyValueDataStore().get(automotive::VehicleData::ID());
-	                VehicleData vd = containerVehicleData.getData<VehicleData> ();
+                    // 1. Get most recent vehicle data:
+                    Container containerVehicleData = getKeyValueDataStore().get(automotive::VehicleData::ID());
+                    VehicleData vd = containerVehicleData.getData<VehicleData> ();
 
-	                // 2. Get most recent sensor board data:
-	                Container containerSensorBoardData = getKeyValueDataStore().get(automotive::miniature::SensorBoardData::ID());
-	                SensorBoardData sbd = containerSensorBoardData.getData<SensorBoardData> ();
+                    // 2. Get most recent sensor board data:
+                    Container containerSensorBoardData = getKeyValueDataStore().get(automotive::miniature::SensorBoardData::ID());
+                    SensorBoardData sbd = containerSensorBoardData.getData<SensorBoardData> ();
 
                     // Moving state machine.
                     if (stageMoving == FORWARD) {
                         // Use m_vehicleControl data from image processing.
 
-                        stageToRightLaneLeftTurn = 0;
+                        stageToRightLaneLeftTurn = 15;
                         stageToRightLaneRightTurn = 0;
                     }
                     else if (stageMoving == TO_LEFT_LANE_LEFT_TURN) {
                         // Move to the left lane: Turn left part until both IRs see something.
-                        //m_vehicleControl.setSpeed(1);
-                        //m_vehicleControl.setSteeringWheelAngle(-25);
+                        m_vehicleControl.setSpeed(1);
+                        m_vehicleControl.setSteeringWheelAngle(-25);
 
                         // State machine measuring: Both IRs need to see something before leaving this moving state.
                         stageMeasuring = HAVE_BOTH_IR;
@@ -413,8 +386,8 @@ namespace automotive {
                     }
                     else if (stageMoving == TO_LEFT_LANE_RIGHT_TURN) {
                         // Move to the left lane: Turn right part until both IRs have the same distance to obstacle.
-                        //m_vehicleControl.setSpeed(1);
-                        //m_vehicleControl.setSteeringWheelAngle(25);
+                        m_vehicleControl.setSpeed(1);
+                        m_vehicleControl.setSteeringWheelAngle(25);
 
                         // State machine measuring: Both IRs need to have the same distance before leaving this moving state.
                         stageMeasuring = HAVE_BOTH_IR_SAME_DISTANCE;
@@ -431,8 +404,8 @@ namespace automotive {
                     }
                     else if (stageMoving == TO_RIGHT_LANE_RIGHT_TURN) {
                         // Move to the right lane: Turn right part.
-                        //m_vehicleControl.setSpeed(1.5);
-                        //m_vehicleControl.setSteeringWheelAngle(25);
+                        m_vehicleControl.setSpeed(1.5);
+                        m_vehicleControl.setSteeringWheelAngle(25);
 
                         stageToRightLaneRightTurn--;
                         if (stageToRightLaneRightTurn == 0) {
@@ -441,12 +414,16 @@ namespace automotive {
                     }
                     else if (stageMoving == TO_RIGHT_LANE_LEFT_TURN) {
                         // Move to the left lane: Turn left part.
-                        //m_vehicleControl.setSpeed(.9);
-                        //m_vehicleControl.setSteeringWheelAngle(-25);
+                        m_vehicleControl.setSpeed(.9);
+                        m_vehicleControl.setSteeringWheelAngle(-5);
 
                         stageToRightLaneLeftTurn--;
                         if (stageToRightLaneLeftTurn == 0) {
                             // Start over.
+
+                            stageToRightLaneRightTurn = 0;
+                            stageToRightLaneLeftTurn = 15;
+
                             stageMoving = FORWARD;
                             stageMeasuring = FIND_OBJECT_INIT;
 
@@ -469,7 +446,7 @@ namespace automotive {
 
                         // Approaching an obstacle (stationary or driving slower than us).
                         if (  (distanceToObstacle > 0) && (((distanceToObstacleOld - distanceToObstacle) > 0) || (fabs(distanceToObstacleOld - distanceToObstacle) < 1e-2)) ) {
-                            // Check if overtaking shall be started.
+                            // Check if overtaking shall be started.                        
                             stageMeasuring = FIND_OBJECT_PLAUSIBLE;
                         }
 
@@ -526,9 +503,9 @@ namespace automotive {
                 Container c2(m_vehicleControl);
                 // Send container.
                 getConference().send(c2);
-	        }
+            }
 
-	        return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
+            return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
         }
 
     }

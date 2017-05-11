@@ -61,6 +61,7 @@ namespace automotive {
             m_previousTime(),
             m_eSum(0),
             m_eOld(0),
+            m_messagecount(0),
             m_vehicleControl() {}
 
         LaneFollower::~LaneFollower() {}
@@ -78,10 +79,13 @@ namespace automotive {
             // This method will be call automatically _after_ return from body().
             if (m_image != NULL) {
                 cvReleaseImage(&m_image);
+                cvReleaseImage(&cannyImage);
+
             }
 
             if (m_debug) {
-                cvDestroyWindow("WindowShowImage");
+                cvDestroyWindow("Original");
+                cvDestroyWindow("Canny");
             }
         }
 
@@ -128,34 +132,76 @@ namespace automotive {
 
         void LaneFollower::canny(){
 
-            // stringstream ss;
-           //  ss << "desiredSteering: " << desiredSteering * 53;
-           //  cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(110, 200, 140));
+            greyImage = cvCreateImage( cvSize(m_image->width, m_image->height), IPL_DEPTH_8U, 1 );
+            cvCvtColor( m_image, greyImage, CV_BGR2GRAY );
 
+            cannyImage = cvCreateImage(cvGetSize(m_image), IPL_DEPTH_8U, 1);
+                                                    
+                                                   //5  5
+            cvSmooth(greyImage, cannyImage, CV_GAUSSIAN, 5, 5);
 
-
-
-          greyImage = cvCreateImage( cvSize(m_image->width, m_image->height), IPL_DEPTH_8U, 1 );
-          cvCvtColor( m_image, greyImage, CV_BGR2GRAY );
-
-         cannyImage = cvCreateImage(cvGetSize(m_image), IPL_DEPTH_8U, 1);
-
-                                     //50, 150, 3
-        cvCanny(greyImage, cannyImage, 50, 150, 3);
+                                       //50, 150, 3
+            cvCanny(cannyImage, cannyImage, 50, 150, 3);
 
         }
 
 
         void LaneFollower::processImage() {
+
             static bool useRightLaneMarking = true;
             double e = 0;
 
 
-            const int32_t CONTROL_SCANLINE = 462; // calibrated length to right: 280px
-            const int32_t distance = 280;
+            const int32_t CONTROL_SCANLINE = 352; // calibrated length to right: 280px
+            const int32_t distance = 160;
+
+            // Search from middle to the top
+                
+            // LINE 1
+            CvScalar pixelTop;
+            CvPoint top;
+            top.y = -1;
+            top.x = m_image->width / 2 - 50;
+                
+            for(int y2 = CONTROL_SCANLINE; y2 > CONTROL_SCANLINE - 50; y2--) {
+                pixelTop = cvGet2D(cannyImage, y2, top.x);
+                if(pixelTop.val[0] >= 50){
+                    top.y = y2;
+                    break;
+                }
+            }
+
+            // LINE 2
+            CvScalar pixelTop2;
+            CvPoint top2;
+            top2.y = -1;
+            top2.x = m_image->width / 2;
+                
+            for(int y2 = CONTROL_SCANLINE; y2 > CONTROL_SCANLINE - 50; y2--) {
+                pixelTop2 = cvGet2D(cannyImage, y2, top2.x);
+                if(pixelTop2.val[0] >= 50){
+                    top2.y = y2;
+                    break;
+                }
+            }
+
+            // LINE 3
+            CvScalar pixelTop3;
+            CvPoint top3;
+            top3.y = -1;
+            top3.x = m_image->width / 2 + 50;
+                
+            for(int y2 = CONTROL_SCANLINE; y2 > CONTROL_SCANLINE - 50; y2--) {
+                pixelTop3 = cvGet2D(cannyImage, y2, top3.x);
+                if(pixelTop3.val[0] >= 50){
+                    top3.y = y2;
+                    break;
+                }
+            }
 
             TimeStamp beforeImageProcessing;
             for(int32_t y = cannyImage->height - 8; y > cannyImage->height * .6; y -= 10) {
+                
                 // Search from middle to the left:
                 CvScalar pixelLeft;
                 CvPoint left;
@@ -176,32 +222,78 @@ namespace automotive {
                 right.x = -1;
                 for(int x = cannyImage->width/2; x < cannyImage->width; x++) {
                     pixelRight = cvGet2D(cannyImage, y, x);
+
                     if (pixelRight.val[0] >= 200) {
                         right.x = x;
                         break;
                     }
                 }
 
-                if (m_debug) {
-                    if (left.x > 0) {
-                        CvScalar green = CV_RGB(0, 255, 0);
-                        cvLine(m_image, cvPoint(m_image->width/2, y), left, green, 1, 8);
-
-                        stringstream sstr;
-                        sstr << (m_image->width/2 - left.x);
-                        cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 - 100, y - 2), &m_font, green);
-                    }
-                    if (right.x > 0) {
-                        CvScalar red = CV_RGB(255, 0, 0);
-                        cvLine(m_image, cvPoint(m_image->width/2, y), right, red, 1, 8);
-
-                        stringstream sstr;
-                        sstr << (right.x - m_image->width/2);
-                        cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 + 100, y - 2), &m_font, red);
-                    }
-                }
+                
+                
 
                 if (y == CONTROL_SCANLINE) {
+
+                    if (m_debug) {
+                        if (left.x > 0) {
+                            CvScalar green = CV_RGB(0, 255, 0);
+                            cvLine(m_image, cvPoint(m_image->width/2, y), left, green, 1, 8);
+
+                            stringstream sstr;
+                            sstr << (m_image->width/2 - left.x);
+                            cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 - 100, y - 2), &m_font, green);
+                        }
+
+                        if (right.x > 0) {
+                            CvScalar red = CV_RGB(255, 0, 0);
+                            cvLine(m_image, cvPoint(m_image->width/2, y), right, red, 1, 8);
+
+                            stringstream sstr;
+                            sstr << (right.x - m_image->width/2);
+                            cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 + 100, y - 2), &m_font, red);
+                        }
+
+                        if (top.y > 0){
+                            // do something
+
+                            CvScalar blue = CV_RGB(0,0, 255);
+                            cvLine(m_image, cvPoint(m_image->width / 2 - 50, y), top, blue, 3, 8);
+                            
+
+                            stringstream sstr;
+                            sstr << ((m_image->height - 8) - top.y);
+                            cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 - 50, y - 100), &m_font, blue);
+
+                        }
+
+                        if (top2.y > 0){
+                            // do something
+
+                            CvScalar blue = CV_RGB(0,0, 255);
+                            cvLine(m_image, cvPoint(m_image->width / 2, y), top2, blue, 3, 8);
+                            
+
+                            stringstream sstr;
+                            sstr << ((m_image->height - 8) - top2.y);
+                            cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2, y - 100), &m_font, blue);
+
+                        }
+
+                        if (top3.y > 0){
+                            // do something
+
+                            CvScalar blue = CV_RGB(0,0, 255);
+                            cvLine(m_image, cvPoint(m_image->width / 2 + 50, y), top3, blue, 3, 8);
+                            
+
+                            stringstream sstr;
+                            sstr << ((m_image->height - 8) - top3.y);
+                            cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 + 50, y - 100), &m_font, blue);
+
+                        }
+                    }
+
+
                     // Calculate the deviation error.
                     if (right.x > 0) {
                         if (!useRightLaneMarking) {
@@ -228,6 +320,7 @@ namespace automotive {
                         m_eSum = 0;
                         m_eOld = 0;
                     }
+                    
                 }
             }
 
@@ -251,9 +344,17 @@ namespace automotive {
 //            const double Kd = 0;
 
             // The following values have been determined by Twiddle algorithm.
-            const double Kp = 1.29;
-            const double Ki = 0.01;
-            const double Kd = 0.1;
+//            m_messagecount++;
+//            cout << "MESSAGE COUNTER = " << m_messagecount << endl;
+
+             double Kp = m_kp;
+             double Ki = m_ki;
+             double Kd = m_kd;
+
+//            if (m_messagecount % 500 == 0) {
+//                m_kp = Kp + 0.1;
+//                cout << "Kp = " << Kp << endl;
+//            }
 
             const double p = Kp * e;
             const double i = Ki * timeStep * m_eSum;
@@ -267,14 +368,15 @@ namespace automotive {
                 desiredSteering = y;
 
                 if (desiredSteering > 25.0) {
+                    cerr << "Steering out of range positive" << endl;
                     desiredSteering = 25.0;
                 }
                 if (desiredSteering < -25.0) {
+                    cerr << "Steering out of range negative" << endl;
                     desiredSteering = -25.0;
                 }
             }
             cerr << "PID: " << "e = " << e << ", eSum = " << m_eSum << ", desiredSteering = " << desiredSteering << ", y = " << y << endl;
-
 
 
             // Go forward.
@@ -284,15 +386,27 @@ namespace automotive {
 
             // Print DesiredSteering
             stringstream ss;
-            ss << "desiredSteering: " << desiredSteering * 53;
-            cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(0, 0, 200));
+            ss << "desiredSteering: " << desiredSteering << " : " << desiredSteering * 57.3 ;
+            cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(200, 0, 200));
 
+            stringstream s1;
+            s1 << "Kp: " << Kp;
+            cvPutText(m_image, s1.str().c_str(), cvPoint(20,60), &m_font, CV_RGB(0, 0, 200));
 
+            stringstream s2;
+            s2 << "Ki: " << Ki;
+            cvPutText(m_image, s2.str().c_str(), cvPoint(20,70), &m_font, CV_RGB(0, 0, 200));
 
-                    // Show resulting features.
+            stringstream s3;
+            s3 << "Kd: " << Kd;
+            cvPutText(m_image, s3.str().c_str(), cvPoint(20,80), &m_font, CV_RGB(0, 0, 200));
+
+            // Show resulting features.
             if (m_debug) {
                 if (m_image != NULL) {
-                    cvShowImage("WindowShowImage", m_image); // original: m_image
+                    cvShowImage("Original", m_image); // original: m_image
+                    cvWaitKey(33);
+                    cvShowImage("Canny", cannyImage); // original: m_image
                     cvWaitKey(33);
                 }
             }
@@ -332,7 +446,7 @@ namespace automotive {
 
             // State counter for dynamically moving back to right lane.
             int32_t stageToRightLaneRightTurn = 0;
-            int32_t stageToRightLaneLeftTurn = 15;
+            int32_t stageToRightLaneLeftTurn = 0;
 
             // Distance variables to ensure we are overtaking only stationary or slowly driving obstacles.
             double distanceToObstacle = 0;
@@ -371,13 +485,13 @@ namespace automotive {
                     if (stageMoving == FORWARD) {
                         // Use m_vehicleControl data from image processing.
 
-                        stageToRightLaneLeftTurn = 15;
+                        stageToRightLaneLeftTurn = 0;
                         stageToRightLaneRightTurn = 0;
                     }
                     else if (stageMoving == TO_LEFT_LANE_LEFT_TURN) {
                         // Move to the left lane: Turn left part until both IRs see something.
-                        m_vehicleControl.setSpeed(1);
-                        m_vehicleControl.setSteeringWheelAngle(-25);
+                        //m_vehicleControl.setSpeed(1);
+                        //m_vehicleControl.setSteeringWheelAngle(-25);
 
                         // State machine measuring: Both IRs need to see something before leaving this moving state.
                         stageMeasuring = HAVE_BOTH_IR;
@@ -386,8 +500,8 @@ namespace automotive {
                     }
                     else if (stageMoving == TO_LEFT_LANE_RIGHT_TURN) {
                         // Move to the left lane: Turn right part until both IRs have the same distance to obstacle.
-                        m_vehicleControl.setSpeed(1);
-                        m_vehicleControl.setSteeringWheelAngle(25);
+                        //m_vehicleControl.setSpeed(1);
+                        //m_vehicleControl.setSteeringWheelAngle(25);
 
                         // State machine measuring: Both IRs need to have the same distance before leaving this moving state.
                         stageMeasuring = HAVE_BOTH_IR_SAME_DISTANCE;
@@ -404,8 +518,8 @@ namespace automotive {
                     }
                     else if (stageMoving == TO_RIGHT_LANE_RIGHT_TURN) {
                         // Move to the right lane: Turn right part.
-                        m_vehicleControl.setSpeed(1.5);
-                        m_vehicleControl.setSteeringWheelAngle(25);
+                        //m_vehicleControl.setSpeed(1.5);
+                        //m_vehicleControl.setSteeringWheelAngle(25);
 
                         stageToRightLaneRightTurn--;
                         if (stageToRightLaneRightTurn == 0) {
@@ -414,16 +528,12 @@ namespace automotive {
                     }
                     else if (stageMoving == TO_RIGHT_LANE_LEFT_TURN) {
                         // Move to the left lane: Turn left part.
-                        m_vehicleControl.setSpeed(.9);
-                        m_vehicleControl.setSteeringWheelAngle(-5);
+                        //m_vehicleControl.setSpeed(.9);
+                        //m_vehicleControl.setSteeringWheelAngle(-25);
 
                         stageToRightLaneLeftTurn--;
                         if (stageToRightLaneLeftTurn == 0) {
                             // Start over.
-
-                            stageToRightLaneRightTurn = 0;
-                            stageToRightLaneLeftTurn = 15;
-
                             stageMoving = FORWARD;
                             stageMeasuring = FIND_OBJECT_INIT;
 
@@ -446,7 +556,7 @@ namespace automotive {
 
                         // Approaching an obstacle (stationary or driving slower than us).
                         if (  (distanceToObstacle > 0) && (((distanceToObstacleOld - distanceToObstacle) > 0) || (fabs(distanceToObstacleOld - distanceToObstacle) < 1e-2)) ) {
-                            // Check if overtaking shall be started.                        
+                            // Check if overtaking shall be started.
                             stageMeasuring = FIND_OBJECT_PLAUSIBLE;
                         }
 

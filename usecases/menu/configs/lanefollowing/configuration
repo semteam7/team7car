@@ -42,7 +42,7 @@ global.session.expectedModules = HelloWorldExample,HelloWorldExample:2
 ###############################################################################
 ###############################################################################
 #
-# NEXT, THE CONFIGURATION FOR OpenDaVINCI TOOLS FOLLOWS. 
+# NEXT, THE CONFIGURATION FOR OpenDaVINCI TOOLS FOLLOWS.
 #
 ###############################################################################
 ###############################################################################
@@ -65,7 +65,7 @@ odsupercomponent.pulsetimeack.timeout = 5000 # (in milliseconds)
 # to deliver their respective containers, this yielding time is used to sleep
 # before supercomponent sends the pulse messages the next module in this execution
 # cycle. This value needs to be adjusted for networked simulations to ensure
-# deterministic execution. 
+# deterministic execution.
 odsupercomponent.pulsetimeack.yield = 5000 # (in microseconds)
 
 # List of modules (without blanks) that will not get a pulse message from odsupercomponent.
@@ -125,7 +125,7 @@ odrecorderh264.portbaseforchildprocesses = 29000 # Every spawned child processes
 
 ###############################################################################
 #
-# NEXT, THE CONFIGURATION FOR OpenDaVINCI SIMULATION TOOLS FOLLOWS. 
+# NEXT, THE CONFIGURATION FOR OpenDaVINCI SIMULATION TOOLS FOLLOWS.
 #
 ###############################################################################
 ###############################################################################
@@ -246,7 +246,7 @@ VCR.debug = 1      # set to 0 to disable any windows and further output
 # CONFIGURATION FOR EGOCONTROLLER
 #
 egocontroller.device=keyboard              # Which device for control to be used (currently, joysticks are working only under Linux, e.g. keyboard or /dev/input/js0).
-egocontroller.behavior=linearbicyclenew    # [simple,force,forcesimplifiedbicycle,forcebicycle,linearbicyclenew] Set to force or forcebicycle to get force-based control.            
+egocontroller.behavior=linearbicyclenew    # [simple,force,forcesimplifiedbicycle,forcebicycle,linearbicyclenew] Set to force or forcebicycle to get force-based control.
 egocontroller.minimumTurningRadius=4.24    # Minimum turning radius in m.
 egocontroller.vehicleMass=1700.0           # Mass in kg.
 egocontroller.adherenceCoefficient=100.0   # N per MPS (squared).

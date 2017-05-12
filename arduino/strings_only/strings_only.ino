@@ -6,7 +6,7 @@
 //Borrowed from examples
 #define GAIN_REGISTER 0x09
 #define LOCATION_REGISTER 0x8C
-#define MOCK true
+#define MOCK false
 
 //Digital
 int SERVO_CONTROL_PIN = 6;
@@ -33,8 +33,6 @@ int STEERING_FULL_RIGHT = 180;
 int SPEED_INPUT;
 int STEERING_INPUT;
 
-int IR_DISTANCE_FACTOR = 12.5;
-int IR_DISTANCE_CUTOFF = 40;
 
 char US_UNIT = 'c';
 SonarSRF08 sonar1(US_1, GAIN_REGISTER, LOCATION_REGISTER);//sonar2(US_2);
@@ -44,6 +42,12 @@ Servo esc, steering;
 int ledPin = 13;
 
 
+int odocount;
+
+void updateCounter(){ //ISR Odometer B
+  Serial.println("oh shit");
+  odocount++;
+}
 
 void setup() {
   //pinMode(ledPin, OUTPUT);
@@ -61,9 +65,9 @@ void setup() {
   delay(1000);
   esc.write(90);
   
-
+  odocount = 0;
+  //attachInterrupt(digitalPinToInterrupt(3), updateCounter, CHANGE);
 }
-
 
 void initSerial()
 {
@@ -129,6 +133,7 @@ void error(String reason){
 
 void executeVehicleCommand(float carSpeed, float carAngle)
 {
+  
   if (carAngle > 1.5){
       carAngle =  1.5; 
     }
@@ -136,10 +141,38 @@ void executeVehicleCommand(float carSpeed, float carAngle)
       carAngle = (-1.5);
     }
     carAngle = (carAngle * 57.3)  + 90;
+
+    if(carSpeed == 2)
+    {
+      carSpeed = 1580;
+    }
+    else if(carSpeed == 1.9)
+    {
+      carSpeed = 98;
+    }
+    else if(carSpeed == 1.8)
+    {
+      carSpeed = 1570;
+    }
+    else if(carSpeed > 0 && carSpeed < 1.8)
+    {
+      carSpeed = 1500;
+    }
+    else if(carSpeed < 0)
+    {
+      carSpeed = 1270;
+    }
+    else
+    {
+      carSpeed = 1500;
+    }
     
-    esc.write(carSpeed);
+    esc.writeMicroseconds(carSpeed);
     steering.write(carAngle);
 }
+
+int IR_DISTANCE_FACTOR = 12.5;
+int IR_DISTANCE_CUTOFF = 25;
 
 char readIRSensor(int pin)
 {
@@ -147,17 +180,16 @@ char readIRSensor(int pin)
   
   float v = analogRead(pin) * (5.0 / 1023.0); //scale analog read value to voltage
   float d = IR_DISTANCE_FACTOR / v;           //get distance in centimeters
-  if(d > IR_DISTANCE_CUTOFF) { return 2; }    //if above cutoff, return -1
-
+  if(d > IR_DISTANCE_CUTOFF) { d = -1; }    //if above cutoff, return -1
 
   return ((char) d) + 31;
 }
 
 char readUSSensor(int address)
 {  
-  if(MOCK) return 3;
+  if(MOCK) return (char)3;
   
-  int range = 0; 
+  int range = -1; 
 
   Wire.beginTransmission(address);                
   Wire.write(0x00);                               // start command

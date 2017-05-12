@@ -139,12 +139,13 @@ void executeVehicleCommand(float carSpeed, float carAngle)
     }
     else if (carAngle < -1.5){
       carAngle = (-1.5);
+      carSpeed= 1580;
     }
     carAngle = (carAngle * 57.3)  + 90;
 
     if(carSpeed == 2)
     {
-      carSpeed = 1580;
+      carSpeed = 1600;
     }
     else if(carSpeed == 1.9)
     {
@@ -160,7 +161,7 @@ void executeVehicleCommand(float carSpeed, float carAngle)
     }
     else if(carSpeed < 0)
     {
-      carSpeed = 1270;
+      carSpeed = 1260;
     }
     else
     {

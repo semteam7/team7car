@@ -17,4 +17,3 @@ services:
                 network_mode: host
                 ipc: host
                 command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111 --freq=20 --ipc=host -e DISPLAY=$$DISPLAY"
-

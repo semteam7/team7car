@@ -6,7 +6,7 @@
 //Borrowed from examples
 #define GAIN_REGISTER 0x09
 #define LOCATION_REGISTER 0x8C
-#define MOCK true
+#define MOCK false
 
 //Digital
 int SERVO_CONTROL_PIN = 6;
@@ -88,35 +88,29 @@ void loop() {
 void readFromSerial() {
   //digitalWrite(ledPin, LOW);
   String command;
-  float carSpeed;
-  float carAngle;
-  
-  if(Serial.available()){
-    command = Serial.readStringUntil('\n');
-    int startIndex = command.indexOf('C');
-    if(startIndex == -1){
-      error("Malformed command, no start");
-      return;
+  float carSpeed = 0;
+  float carAngle = 0;
+
+    if(Serial.available()) {
+      while (Serial.available() > 1) {
+        Serial.read();
       }
+
+      byte cmd = Serial.read();
+      carAngle = ((cmd >> 3) - 16) / 10.0;
+      carSpeed = ((7 & cmd) * 6) / 10.0 ;
+      
     
-    command = command.substring(startIndex, command.length()-1); //trim command
+      executeVehicleCommand(carSpeed, carAngle);
 
-    int delimiter = command.indexOf(';');
-
-    if(delimiter == -1){
-      error("Malformed command, no delim");
-      return;
     }
-    
-    carSpeed = command.substring(1, delimiter).toFloat();
-    carAngle = command.substring(delimiter+1).toFloat();
-    //digitalWrite(ledPin, HIGH);
+//    carSpeed = command.substring(1, delimiter).toFloat();
+//    carAngle = command.substring(delimiter+1).toFloat();
+//    digitalWrite(ledPin, HIGH);
 //    Serial.println("Executing command");
-    executeVehicleCommand(carSpeed, carAngle);
 //    Serial.println("Executed command");
   }
 
-}
 
 boolean serialDebug = true;
 void error(String reason){
@@ -136,7 +130,28 @@ void executeVehicleCommand(float carSpeed, float carAngle)
       carAngle = (-1.5);
     }
     carAngle = (carAngle * 57.3)  + 90;
-    
+
+    if(carSpeed > 1)
+    {
+      carSpeed = 1580;
+    }
+    else if(carSpeed > 0)
+    {
+      carSpeed = 1550;
+    }
+    else if(carSpeed == 0)
+    {
+      carSpeed = 1500;
+    }
+    else if(carSpeed > -1)
+    {
+      carSpeed = 1400;
+    }
+    else
+    {
+      carSpeed = 1360;
+    }
+
     esc.write(carSpeed);
     steering.write(carAngle);
 }
@@ -181,7 +196,6 @@ char readUSSensor(int address)
   return ((char) range) + 31;
 }
 
-
 void sendSensorData(){
   String sensorData = "S";
   sensorData += readIRSensor(IR_1);
@@ -192,3 +206,4 @@ void sendSensorData(){
   
   Serial.println(sensorData);
 }
+

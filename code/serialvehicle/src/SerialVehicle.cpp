@@ -35,7 +35,7 @@
 
 #include "SerialVehicle.h"
 #include "SerialHandler.h"
-
+#include <bitset>
 namespace scaledcars {
 namespace team7 {
 
@@ -70,18 +70,41 @@ void SerialVehicle::nextContainer(odcore::data::Container &c) {
     if (c.getDataType() == VehicleControl::ID()) {
             vc_count++;
             cout << "Message count: " <<vc_count << endl;
-            if(vc_count % 15 == 0)
+            if(true)
             {
                 VehicleControl vc = c.getData<VehicleControl> ();
+                int angle = (vc.getSteeringWheelAngle() * 10) + 16 ;
+
+                //clamp values
+
+                if( angle > 32 )
+                {
+                    angle = 31;
+                }else if( angle < 0 )
+                {
+                    angle = 0;
+                }
+
+                int speed = ((int)(vc.getSpeed() * 10)) / 6;
+
+                uint8_t cmd = (angle << 3) + speed;
 
                 cout << "VC speed: " <<vc.getSpeed() << " VC angle: " << vc.getSteeringWheelAngle() << endl;
+                cout << "Speed: " << speed << " Angle: " << angle << endl << "Command : " << std::bitset<8>(cmd) << endl ;
+
+
+                float dangle = ((cmd >> 3) - 16) / 10.0;
+                float dspeed = ((7 & cmd) * 6) / 10.0 ;
+
+                cout << "DSpeed: " << (7 & cmd) << " -> "<< dspeed << " DAngle: " << (cmd >> 3) <<" -> "<< dangle << endl ;
+
 
                 stringstream cs;
                 cs << "C" << setprecision(2) << vc.getSpeed() << ";" << vc.getSteeringWheelAngle() << "\r\n";
                 string command = cs.str();
 
-                m_serial->send(command);
-                cout << "Sent command: " << command;
+                m_serial->send(string(1, cmd));
+                cout << "Sent command: " << cmd;
             }
         }
 }

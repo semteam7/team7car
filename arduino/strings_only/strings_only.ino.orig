@@ -33,8 +33,6 @@ int STEERING_FULL_RIGHT = 180;
 int SPEED_INPUT;
 int STEERING_INPUT;
 
-int IR_DISTANCE_FACTOR = 12.5;
-int IR_DISTANCE_CUTOFF = 40;
 
 char US_UNIT = 'c';
 SonarSRF08 sonar1(US_1, GAIN_REGISTER, LOCATION_REGISTER);//sonar2(US_2);
@@ -70,7 +68,6 @@ void setup() {
   odocount = 0;
   //attachInterrupt(digitalPinToInterrupt(3), updateCounter, CHANGE);
 }
-
 
 void initSerial()
 {
@@ -118,7 +115,6 @@ void readFromSerial() {
 //    Serial.println("Executed command");
   }
 
-}
 
 boolean serialDebug = true;
 void error(String reason){
@@ -137,9 +133,38 @@ void executeVehicleCommand(float carSpeed, float carAngle)
     }
     else if (carAngle < -1.5){
       carAngle = (-1.5);
+      carSpeed= 1580;
     }
     carAngle = (carAngle * 57.3)  + 90;
 
+<<<<<<< HEAD
+    if(carSpeed == 2)
+    {
+      carSpeed = 1600;
+    }
+    else if(carSpeed == 1.9)
+    {
+      carSpeed = 98;
+    }
+    else if(carSpeed == 1.8)
+    {
+      carSpeed = 1570;
+    }
+    else if(carSpeed > 0 && carSpeed < 1.8)
+    {
+      carSpeed = 1500;
+    }
+    else if(carSpeed < 0)
+    {
+      carSpeed = 1260;
+    }
+    else
+    {
+      carSpeed = 1500;
+    }
+    
+    esc.writeMicroseconds(carSpeed);
+=======
     if(carSpeed > 1)
     {
       carSpeed = 1580;
@@ -162,6 +187,7 @@ void executeVehicleCommand(float carSpeed, float carAngle)
     }
 
     esc.write(carSpeed);
+>>>>>>> lanefollowing
     steering.write(carAngle);
 }
 
@@ -206,7 +232,6 @@ char readUSSensor(int address)
   
   return ((char) range) + 31;
 }
-
 
 void sendSensorData(){
   String sensorData = "S";

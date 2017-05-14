@@ -17,4 +17,4 @@
 
 # Date: 2016-12-02
 
-FROM seresearch/scaledcars-on-opendlv-on-opendlv-core-on-opendavinci-on-base:latest
+FROM seresearch/scaledcars-on-opendlv-on-opendlv-core-on-opendavinci-on-base-dev:latest

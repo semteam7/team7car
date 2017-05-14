@@ -8,6 +8,13 @@
 #define LOCATION_REGISTER 0x8C
 #define MOCK false
 
+#define RADIO_MOTOR_PIN 4  
+#define RADIO_SERVO_PIN 5  
+
+#define SPEED_COF 0.20 //Coefficient to control max speed
+#define REVERSE_COF 0.65 //Coefficient to control max speed, whilst reversing
+#define SPEED_BASELINE 1500 //Neutral value for the speed radio input
+
 //Digital
 int SERVO_CONTROL_PIN = 6;
 int ESC_PIN = 9;
@@ -50,6 +57,8 @@ void setup() {
   
   pinMode(ESC_PIN, OUTPUT);
   pinMode(SERVO_CONTROL_PIN, OUTPUT);
+  pinMode(RADIO_MOTOR_PIN, INPUT);
+  pinMode(RADIO_SERVO_PIN, INPUT);
   esc.attach(ESC_PIN);
   steering.attach(SERVO_CONTROL_PIN);
   
@@ -74,6 +83,11 @@ int rcThrottleValue, rcSteeringValue;
 bool safetyStop = false;
 long lastRead = 0;
 void loop() {
+  float remoteSpeed = getRequestedSpeed();
+  if (remoteSpeed != 1500){
+    esc.write(remoteSpeed);
+  }
+  
   readFromSerial();
   //Serial.println("in loop");
 
@@ -194,6 +208,18 @@ char readUSSensor(int address)
   range = (highByte << 8) + lowByte;
   
   return ((char) range) + 31;
+}
+
+int getRequestedSpeed(){
+  int pulse = pulseIn(RADIO_MOTOR_PIN, HIGH); //Read pulse rate
+  float scale = pulse > SPEED_BASELINE ? SPEED_COF : REVERSE_COF;
+  /*
+    Scale pulse by relivant speed Coefficient, with SPEED_BASELINE as the origin
+  */
+  int s = pulse - SPEED_BASELINE; 
+  s *= scale; 
+  s += SPEED_BASELINE; 
+  return s;
 }
 
 void sendSensorData(){

@@ -35,7 +35,8 @@
 #include "opendavinci/GeneratedHeaders_OpenDaVINCI.h"
 
 #include "LaneFollower.h"
-#include <vector> 
+#include <vector>
+#include <cmath> 
 
 namespace automotive {
     namespace miniature {
@@ -62,6 +63,8 @@ namespace automotive {
             m_eSum(0),
             m_eOld(0),
             m_messagecount(0),
+            m_stop(false),
+            m_stopTime(),
             m_vehicleControl() {}
 
         LaneFollower::~LaneFollower() {}
@@ -91,7 +94,9 @@ namespace automotive {
 
         bool LaneFollower::readSharedImage(Container &c) {
             bool retVal = false;
-
+            
+            //m_stop = false;
+            
             if (c.getDataType() == odcore::data::image::SharedImage::ID()) {
                 SharedImage si = c.getData<SharedImage> ();
 
@@ -151,9 +156,17 @@ namespace automotive {
             static bool useRightLaneMarking = true;
             double e = 0;
 
-
             const int32_t CONTROL_SCANLINE = 352; // calibrated length to right: 280px
             const int32_t distance = 160;
+
+             // TOP OF THE CAR LINE
+            CvScalar red2 = CV_RGB(255,0, 0);
+            cvLine(m_image, cvPoint(0, CONTROL_SCANLINE + 20), cvPoint(m_image->width, CONTROL_SCANLINE + 20), red2, 5, 8);
+
+
+           
+
+
 
             // Search from middle to the top
                 
@@ -164,6 +177,7 @@ namespace automotive {
             top.x = m_image->width / 2 - 50;
                 
             for(int y2 = CONTROL_SCANLINE; y2 > CONTROL_SCANLINE - 50; y2--) {
+                
                 pixelTop = cvGet2D(cannyImage, y2, top.x);
                 if(pixelTop.val[0] >= 50){
                     top.y = y2;
@@ -199,6 +213,8 @@ namespace automotive {
                 }
             }
 
+
+
             TimeStamp beforeImageProcessing;
             for(int32_t y = cannyImage->height - 8; y > cannyImage->height * .6; y -= 10) {
                 
@@ -228,8 +244,6 @@ namespace automotive {
                         break;
                     }
                 }
-
-                
                 
 
                 if (y == CONTROL_SCANLINE) {
@@ -327,7 +341,12 @@ namespace automotive {
             TimeStamp afterImageProcessing;
             cerr << "Processing time: " << (afterImageProcessing.toMicroseconds() - beforeImageProcessing.toMicroseconds())/1000.0 << "ms." << endl;
 
-    
+            
+
+             // 
+
+
+
 
             TimeStamp currentTime;
             double timeStep = (currentTime.toMicroseconds() - m_previousTime.toMicroseconds()) / (1000.0 * 1000.0);
@@ -339,6 +358,54 @@ namespace automotive {
             else {
                 m_eSum += e;
             }
+
+            int point1 = m_image->height - 8 - top.y;
+            //int point2 = m_image->height - 8 - top2.y;
+            //int point3 = m_image->height - 8 - top3.y;
+
+           // TimeStamp newCurrentTime;
+
+//             if ((point1 < 145 && point1 > 125 ) && (point2 < 145 && point2 > 125) && (point3 < 145 && point3 > 125)){
+// //                if ( abs(point1 - point2) < 10  && abs (point2 - point3) < 10 ) {
+//                     m_stop = true;
+                 
+//   //              }
+//            }
+
+
+
+            if ((point1 < 145 && point1 > 125)){
+                    
+                if (m_stop == false){
+
+                    if ((currentTime.toMicroseconds() - m_stopTime.toMicroseconds()) > (5000 * 1000)){  
+                        m_stop = true;
+                        m_stopTime = currentTime;
+                    }
+                }
+            }  
+
+            int carSpeed = 2;
+
+            if (m_stop){
+
+                if ((currentTime.toMicroseconds() - m_stopTime.toMicroseconds()) > (3000 * 1000)){
+                
+                    m_stop = false;
+                }
+
+                carSpeed = 0;
+
+                cerr << "STOP CAR NOW" << endl;
+            
+            } 
+
+
+            // else {
+
+            //if (newCurrentTime.toMicroseconds() - m_stopTime.toMicroseconds() > (1000 * 1000)){
+             //  m_stopTime = newCurrentTime;
+
 //            const double Kp = 2.5;
 //            const double Ki = 8.5;
 //            const double Kd = 0;
@@ -347,68 +414,74 @@ namespace automotive {
 //            m_messagecount++;
 //            cout << "MESSAGE COUNTER = " << m_messagecount << endl;
 
-             double Kp = m_kp;
-             double Ki = m_ki;
-             double Kd = m_kd;
+                 double Kp = m_kp;
+                 double Ki = m_ki;
+                 double Kd = m_kd;
 
 //            if (m_messagecount % 500 == 0) {
 //                m_kp = Kp + 0.1;
 //                cout << "Kp = " << Kp << endl;
 //            }
 
-            const double p = Kp * e;
-            const double i = Ki * timeStep * m_eSum;
-            const double d = Kd * (e - m_eOld)/timeStep;
-            m_eOld = e;
+                const double p = Kp * e;
+                const double i = Ki * timeStep * m_eSum;
+                const double d = Kd * (e - m_eOld)/timeStep;
+                m_eOld = e;
 
-            const double y = p + i + d;
-            double desiredSteering = 0;
+                const double y = p + i + d;
+                double desiredSteering = 0;
 
-            if (fabs(e) > 1e-2) {
-                desiredSteering = y;
+                if (fabs(e) > 1e-2) {
+                    desiredSteering = y;
 
-                if (desiredSteering > 25.0) {
-                    cerr << "Steering out of range positive" << endl;
-                    desiredSteering = 25.0;
+                    if (desiredSteering > 25.0) {
+                        cerr << "Steering out of range positive" << endl;
+                        desiredSteering = 25.0;
+                    }
+                    if (desiredSteering < -25.0) {
+                        cerr << "Steering out of range negative" << endl;
+                        desiredSteering = -25.0;
+                    }
                 }
-                if (desiredSteering < -25.0) {
-                    cerr << "Steering out of range negative" << endl;
-                    desiredSteering = -25.0;
-                }
-            }
-            cerr << "PID: " << "e = " << e << ", eSum = " << m_eSum << ", desiredSteering = " << desiredSteering << ", y = " << y << endl;
+
+                cerr << "PID: " << "e = " << e << ", eSum = " << m_eSum << ", desiredSteering = " << desiredSteering << ", y = " << y << endl;
 
 
-            // Go forward.
-            m_vehicleControl.setSpeed(2);
-            m_vehicleControl.setSteeringWheelAngle(desiredSteering);
+                // Go forward.
+                m_vehicleControl.setSpeed(carSpeed);
+                m_vehicleControl.setSteeringWheelAngle(desiredSteering);
 
+                // Print Stop Case
+                stringstream sstop;
+                sstop << "stop: " << m_stop;
+                cvPutText(m_image, sstop.str().c_str(), cvPoint(20,90), &m_font, CV_RGB(120, 120, 120));
 
-            // Print DesiredSteering
-            stringstream ss;
-            ss << "desiredSteering: " << desiredSteering << " : " << desiredSteering * 57.3 ;
-            cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(200, 0, 200));
+                // Print DesiredSteering
+                stringstream ss;
+                ss << "desiredSteering: " << desiredSteering << " : " << desiredSteering * 57.3 ;
+                cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(0, 0, 200));
 
-            stringstream s1;
-            s1 << "Kp: " << Kp;
-            cvPutText(m_image, s1.str().c_str(), cvPoint(20,60), &m_font, CV_RGB(0, 0, 200));
+                stringstream s1;
+                s1 << "Kp: " << Kp;
+                cvPutText(m_image, s1.str().c_str(), cvPoint(20,60), &m_font, CV_RGB(0, 0, 200));
 
-            stringstream s2;
-            s2 << "Ki: " << Ki;
-            cvPutText(m_image, s2.str().c_str(), cvPoint(20,70), &m_font, CV_RGB(0, 0, 200));
+                stringstream s2;
+                s2 << "Ki: " << Ki;
+                cvPutText(m_image, s2.str().c_str(), cvPoint(20,70), &m_font, CV_RGB(0, 0, 200));
 
-            stringstream s3;
-            s3 << "Kd: " << Kd;
-            cvPutText(m_image, s3.str().c_str(), cvPoint(20,80), &m_font, CV_RGB(0, 0, 200));
+                stringstream s3;
+                s3 << "Kd: " << Kd;
+                cvPutText(m_image, s3.str().c_str(), cvPoint(20,80), &m_font, CV_RGB(0, 0, 200));
 
-            // Show resulting features.
-            if (m_debug) {
-                if (m_image != NULL) {
-                    cvShowImage("Original", m_image); // original: m_image
-                    cvWaitKey(33);
-                    cvShowImage("Canny", cannyImage); // original: m_image
-                    cvWaitKey(33);
-                }
+                // Show resulting features.
+                if (m_debug) {
+                    if (m_image != NULL) {
+                        cvShowImage("Original", m_image); // original: m_image
+                        cvWaitKey(33);
+                        cvShowImage("Canny", cannyImage); // original: m_image
+                        cvWaitKey(33);
+                    }
+              //  }
             }
         }
 

@@ -77,6 +77,8 @@ class SensorBoardFilter : public odcore::base::module::DataTriggeredConferenceCl
     double r=4; //sensor noise
 
     double getKalmanValue(double measurement, int sensor){
+      if((int)measurement == -1) { return -1; } //don't filter no values
+
       //prediction part
       p = p + q;
 

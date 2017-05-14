@@ -161,7 +161,7 @@ void executeVehicleCommand(float carSpeed, float carAngle)
     }
     else if(carSpeed < 0)
     {
-      carSpeed = 1260;
+      carSpeed = 1250;
     }
     else
     {

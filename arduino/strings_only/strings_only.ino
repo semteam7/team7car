@@ -5,7 +5,8 @@
 
 //Borrowed from examples
 #define GAIN_REGISTER 0x09
-#define LOCATION_REGISTER 0x8C
+#define LOCATION_REGISTER 0x18
+
 #define MOCK false
 
 //Digital
@@ -37,7 +38,8 @@ int IR_DISTANCE_FACTOR = 12.5;
 int IR_DISTANCE_CUTOFF = 40;
 
 char US_UNIT = 'c';
-SonarSRF08 sonar1(US_1, GAIN_REGISTER, LOCATION_REGISTER);//sonar2(US_2);
+SonarSRF08 sonar1(US_1, GAIN_REGISTER, LOCATION_REGISTER);
+SonarSRF08 sonar2(US_2, GAIN_REGISTER, LOCATION_REGISTER);
 
 Servo esc, steering;
 
@@ -54,7 +56,7 @@ void setup() {
   steering.attach(SERVO_CONTROL_PIN);
   
   sonar1.begin();
- // sonar2.begin();
+  sonar2.begin();
    
   initSerial();
   //digitalWrite(ledPin, HIGH);
@@ -123,11 +125,11 @@ void error(String reason){
 
 void executeVehicleCommand(float carSpeed, float carAngle)
 {
-  if (carAngle > 1.5){
-      carAngle =  1.5; 
+  if (carAngle > 1.4){
+      carAngle =  1.4; 
     }
-    else if (carAngle < -1.5){
-      carAngle = (-1.5);
+    else if (carAngle < -1.4){
+      carAngle = (-1.4);
     }
     carAngle = (carAngle * 57.3)  + 90;
 
@@ -162,7 +164,7 @@ char readIRSensor(int pin)
   
   float v = analogRead(pin) * (5.0 / 1023.0); //scale analog read value to voltage
   float d = IR_DISTANCE_FACTOR / v;           //get distance in centimeters
-  if(d > IR_DISTANCE_CUTOFF) { return 2; }    //if above cutoff, return -1
+  if(d > IR_DISTANCE_CUTOFF) { d = -1; }    //if above cutoff, return -1
 
 
   return ((char) d) + 31;
@@ -172,7 +174,7 @@ char readUSSensor(int address)
 {  
   if(MOCK) return 3;
   
-  int range = 0; 
+  int range = -1; 
 
   Wire.beginTransmission(address);                
   Wire.write(0x00);                               // start command
@@ -192,6 +194,11 @@ char readUSSensor(int address)
   byte highByte = Wire.read();                          // Get high byte
   byte lowByte = Wire.read();                           // Get low byte
   range = (highByte << 8) + lowByte;
+
+  if(range > 45 || range < 0)
+  {
+    range = -1;
+  }
   
   return ((char) range) + 31;
 }

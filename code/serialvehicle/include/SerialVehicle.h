@@ -61,8 +61,7 @@ using namespace odcore::wrapper;
     SerialVehicle(const int &argc, char **argv);
     virtual ~SerialVehicle();
     virtual void nextContainer(odcore::data::Container &c);
-    virtual void nextString(const string &s);
-
+    
    private:
     void setUp();
     void tearDown();

@@ -106,7 +106,6 @@ void SerialVehicle::nextContainer(odcore::data::Container &c) {
                 cout << "Sent command: " << cmd;
             }
         }
-}
 
 void SerialVehicle::reconnect()
 {
@@ -116,10 +115,4 @@ void SerialVehicle::reconnect()
     m_serial->start();
 }
 
-void SerialVehicle::nextString(const string &s)
-{
-    cout << "Received " << s.length() << " bytes: " << s << endl;
-}
-
-}
-} // scaledcars::perception
+}} // scaledcars::perception

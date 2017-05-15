@@ -71,7 +71,7 @@ namespace team7 {
             {
                 m_odo_wrap_count++;
             }
-            m_odo_last_value = value[5];
+            m_odo_last_value = values[5];
 
             m_sensorboard_data.setNumberOfSensors(7);
             std::map<uint32_t, double> distances{

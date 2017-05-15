@@ -161,7 +161,7 @@ namespace automotive {
 
              // TOP OF THE CAR LINE
             CvScalar red2 = CV_RGB(255,0, 0);
-            cvLine(m_image, cvPoint(0, CONTROL_SCANLINE + 20), cvPoint(m_image->width, CONTROL_SCANLINE + 20), red2, 5, 8);
+            cvLine(m_image, cvPoint(0, CONTROL_SCANLINE + 20), cvPoint(m_image->width, CONTROL_SCANLINE + 20), red2, 4, 8);
 
 
 
@@ -169,6 +169,8 @@ namespace automotive {
             int leftPoint2;
             int rightPoint1;
             int rightPoint2;
+            int rightX;
+            int leftX;
 
 
             // Search from middle to the top
@@ -177,7 +179,7 @@ namespace automotive {
             CvScalar pixelTop;
             CvPoint top;
             top.y = -1;
-            top.x = m_image->width / 2 - 15;
+            top.x = m_image->width / 2 - 100;
 
             for(int y2 = CONTROL_SCANLINE; y2 > CONTROL_SCANLINE - 70; y2--) {
 
@@ -192,7 +194,7 @@ namespace automotive {
             CvScalar pixelTop2;
             CvPoint top2;
             top2.y = -1;
-            top2.x = m_image->width / 2 + 15;
+            top2.x = m_image->width / 2 + 100;
 
             for(int y2 = CONTROL_SCANLINE; y2 > CONTROL_SCANLINE - 70; y2--) {
                 pixelTop2 = cvGet2D(cannyImage, y2, top2.x);
@@ -205,7 +207,8 @@ namespace automotive {
             TimeStamp beforeImageProcessing;
 
 
-            // One time for loop
+            // Two time for loop 
+            // Cover 80% of image width
             for(int32_t y = CONTROL_SCANLINE - 20; y <= CONTROL_SCANLINE + 20; y += 20) {
 
                 // Search from middle to the left:
@@ -260,7 +263,7 @@ namespace automotive {
                         if (top.y > 0 && (y == CONTROL_SCANLINE)){
 
                             CvScalar blue = CV_RGB(0,0, 255);
-                            cvLine(m_image, cvPoint(m_image->width / 2 - 15, y), top, blue, 3, 8);
+                            cvLine(m_image, cvPoint(m_image->width / 2 - 100, y), top, blue, 3, 8);
                             
 
                             stringstream sstr;
@@ -272,7 +275,7 @@ namespace automotive {
                         if (top2.y > 0 && (y == CONTROL_SCANLINE)){
 
                             CvScalar blue = CV_RGB(0,0, 255);
-                            cvLine(m_image, cvPoint(m_image->width / 2 + 15, y), top2, blue, 3, 8);
+                            cvLine(m_image, cvPoint(m_image->width / 2 + 100, y), top2, blue, 3, 8);
                             
 
                             stringstream sstr;
@@ -283,41 +286,123 @@ namespace automotive {
                     }
 
 
-
                     if (y == CONTROL_SCANLINE){
                         if (left.x != -1){
                             leftPoint1 = m_image->width/2 - left.x;
                         }
 
+                        if (left.x == -1){
+                            leftPoint1 = -1;
+                        }
+
                         if (right.x != -1){
                             rightPoint1 = right.x - m_image->width/2;
+                        }
+
+                        if (right.x == -1){
+                            rightPoint1 = -1;
                         }
                     }
 
                     if (y == CONTROL_SCANLINE - 20){
-                        
+
                         if (left.x != -1){
                             leftPoint2 = m_image->width/2 - left.x;
+                        }
+
+                        if (left.x == -1){
+                            leftPoint2 = -1;
                         }
 
                         if (right.x != -1){
                             rightPoint2 = right.x - m_image->width/2;
                         }
+
+                        if (right.x == -1){
+                            rightPoint2 = -1;
+                        }
                     }
 
-                    cerr << "LEFT 1: " << leftPoint1 << endl;
+                    // cerr << "LEFT 1: " << leftPoint1 << endl;
 
-                    cerr << "LEFT 2: " << leftPoint2 << endl;
+                    // cerr << "LEFT 2: " << leftPoint2 << endl;
 
-                    cerr << "RIGHT 1: " << rightPoint1 << endl;
+                    // cerr << "RIGHT 1: " << rightPoint1 << endl;
 
-                    cerr << "RIGHT 2: " << rightPoint2 << endl;
+                    // cerr << "RIGHT 2: " << rightPoint2 << endl;
+
+
+
+
+                    rightX = abs (rightPoint1 - leftPoint1);
+                    leftX = abs (rightPoint2 - leftPoint2);
+
+
+                    /*
+                    if (rightPoint1 > 0 || rightPoint2 > 0){
+                        if (!useRightLaneMarking){
+                            m_eSum = 0;
+                            m_eOld = 0;
+                        }
+
+                        // CHECK RANGES TO CALCULATE E
+                        //if (abs (rightPoint1 - rightPoint2) < 30){
+
+                        int updatedPoint = (rightPoint1 + rightPoint2) / 2;
+                        e = (updatedPoint - distance) / distance;
+                        
+                       // } else if (rightPoint1 > 70) {
+                        //    e = (rightPoint1 - distance) / distance;
+
+                       // } else {
+                          //  e = (rightPoint2 - distance) / distance;
+
+                        //}
+
+
+
+                        useRightLaneMarking = true;
+                    }
+
+                    else if (leftPoint1 > 0 || leftPoint2 > 0){
+                        if (useRightLaneMarking) {
+                            m_eSum = 0;
+                            m_eOld = 0;
+                        }
+
+                        // CHECK RANGES TO CALCULATE E
+
+                        //if (abs (leftPoint1 - leftPoint2) < 30) {
+
+                        int updatedPoint = (leftPoint1 + leftPoint2) / 2;
+                        e = (distance - updatedPoint) / distance
+
+                        //} else if (leftPoint1 > 70) {
+                         //   e = (leftPoint1 - distance) / distance; 
+                        //} else {
+                        //    e = (leftPoint2 - distance) / distance; 
+                       // }
+
+                        useRightLaneMarking = false;
+                    }
+
+                    else {
+
+                        m_eSum = 0;
+                        m_eOld = 0;
+                    }
+
+                    
+
+                    */
+                    
                     // Calculate the deviation error.
                     if (right.x > 0) {
                         if (!useRightLaneMarking) {
                             m_eSum = 0;
                             m_eOld = 0;
                         }
+
 
                         e = ((right.x - cannyImage->width/2.0) - distance)/distance;
 
@@ -338,6 +423,7 @@ namespace automotive {
                         m_eSum = 0;
                         m_eOld = 0;
                     }
+                    
                     
                 }
             }
@@ -360,7 +446,7 @@ namespace automotive {
             }
 
             int topPoint1 = m_image->height - 8 - top.y;
-            //int point2 = m_image->height - 8 - top2.y;
+            int topPoint2 = m_image->height - 8 - top2.y;
             //int point3 = m_image->height - 8 - top3.y;
 
            // TimeStamp newCurrentTime;
@@ -377,7 +463,7 @@ namespace automotive {
 
 
 
-            if ((topPoint1 < 145 && topPoint1 > 125)){
+            if (((topPoint1 < 145 && topPoint1 > 125) && (topPoint2 < 145 && topPoint2 > 125)) && (abs (topPoint2 - topPoint1) < 20)){
 
                 if (m_stop == false){
 
@@ -435,11 +521,11 @@ namespace automotive {
             const double d = Kd * (e - m_eOld)/timeStep;
             m_eOld = e;
 
-            const double y = p + i + d;
+            const double pid = p + i + d;
             double desiredSteering = 0;
 
             if (fabs(e) > 1e-2) {
-                desiredSteering = y;
+                desiredSteering = pid;
 
                 if (desiredSteering > 25.0) {
                     cerr << "Steering out of range positive" << endl;
@@ -451,15 +537,15 @@ namespace automotive {
                 }
             }
 
-            cerr << "PID: " << "e = " << e << ", eSum = " << m_eSum << ", desiredSteering = " << desiredSteering << ", y = " << y << endl;
+            cerr << "PID: " << "e = " << e << ", eSum = " << m_eSum << ", desiredSteering = " << desiredSteering << ", pid = " << pid << endl;
 
 
                 // TEST THIS
-            if (m_stop){
+//            if (m_stop){
 
-                desiredSteering = 0;
-                
-            } 
+  //              desiredSteering = 0;
+
+    //        } 
                 // Go forward.
             m_vehicleControl.setSpeed(carSpeed);
             m_vehicleControl.setSteeringWheelAngle(desiredSteering);
@@ -467,7 +553,7 @@ namespace automotive {
                 // Print Stop Case
             stringstream sstop;
             sstop << "stop: " << m_stop;
-            cvPutText(m_image, sstop.str().c_str(), cvPoint(20,90), &m_font, CV_RGB(120, 120, 120));
+            cvPutText(m_image, sstop.str().c_str(), cvPoint(20,150), &m_font, CV_RGB(0, 0, 200));
 
                 // Print DesiredSteering
             stringstream ss;
@@ -501,6 +587,19 @@ namespace automotive {
             stringstream s7;
             s7 << "RIGHT 2 = " << rightPoint2;
             cvPutText(m_image, s7.str().c_str(), cvPoint(20,120), &m_font, CV_RGB(0, 0, 200));
+
+            stringstream s8;
+            s8 << "FIRST DIFF = " << rightX;
+            cvPutText(m_image, s8.str().c_str(), cvPoint(20,130), &m_font, CV_RGB(0, 0, 200));
+
+            stringstream s9;
+            s9 << "SECOND DIFF = " << leftX;
+            cvPutText(m_image, s9.str().c_str(), cvPoint(20,140), &m_font, CV_RGB(0, 0, 200));
+
+            stringstream s10;
+            s10 << "CAR SPEED = " << carSpeed;
+            cvPutText(m_image, s10.str().c_str(), cvPoint(20,160), &m_font, CV_RGB(0, 0, 200));
+
 
                 // Show resulting features.
             if (m_debug) {

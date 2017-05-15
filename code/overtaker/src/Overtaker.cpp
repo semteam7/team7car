@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include <iostream>
+
 #include <cstdio>
 #include <cmath>
 
@@ -54,11 +56,12 @@ namespace automotive {
         // This method will do the main data processing job.
         odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Overtaker::body() {
             const int32_t ULTRASONIC_FRONT_CENTER = 3;
+
             const int32_t ULTRASONIC_FRONT_RIGHT = 4;
             const int32_t INFRARED_FRONT_RIGHT = 0;
             const int32_t INFRARED_REAR_RIGHT = 2;
 
-            const double OVERTAKING_DISTANCE = 5.5;
+            const double OVERTAKING_DISTANCE = 30.0;
             const double HEADING_PARALLEL = 0.04;
 
             // Overall state machines for moving and measuring.
@@ -70,16 +73,16 @@ namespace automotive {
 
             // State counter for dynamically moving back to right lane.
             int32_t stageToRightLaneRightTurn = 0;
-            int32_t stageToRightLaneLeftTurn = 15;
+            int32_t stageToRightLaneLeftTurn = 150; //15
 
             // Distance variables to ensure we are overtaking only stationary or slowly driving obstacles.
             double distanceToObstacle = 0;
             double distanceToObstacleOld = 0;
 
             while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-	            // 1. Get most recent vehicle data:
-	            Container containerVehicleData = getKeyValueDataStore().get(VehicleData::ID());
-	            VehicleData vd = containerVehicleData.getData<VehicleData> ();
+                // 1. Get most recent vehicle data:
+                Container containerVehicleData = getKeyValueDataStore().get(VehicleData::ID());
+                VehicleData vd = containerVehicleData.getData<VehicleData> ();
 
                 // 2. Get most recent sensor board data:
                 Container containerSensorBoardData = getKeyValueDataStore().get(automotive::miniature::SensorBoardData::ID());
@@ -93,6 +96,8 @@ namespace automotive {
                     // Go forward.
                     vc.setSpeed(2);
                     vc.setSteeringWheelAngle(0);
+                    cout<<"moves forward"<<endl;
+
 
                     stageToRightLaneLeftTurn = 15;
                     stageToRightLaneRightTurn = 0;
@@ -101,9 +106,13 @@ namespace automotive {
                     // Move to the left lane: Turn left part until both IRs see something.
                     vc.setSpeed(1);
                     vc.setSteeringWheelAngle(-25);
+                    cout<<"overtaking, turning left"<<endl;
+
 
                     // State machine measuring: Both IRs need to see something before leaving this moving state.
                     stageMeasuring = HAVE_BOTH_IR;
+                    cout<<"HAVE_BOTH_IR "<<endl;
+
 
                     stageToRightLaneRightTurn++;
                 }
@@ -111,16 +120,20 @@ namespace automotive {
                     // Move to the left lane: Turn right part until both IRs have the same distance to obstacle.
                     vc.setSpeed(1);
                     vc.setSteeringWheelAngle(25);
+                                        cout<<"car is turning right on the left lane"<<endl;
+
 
                     // State machine measuring: Both IRs need to have the same distance before leaving this moving state.
                     stageMeasuring = HAVE_BOTH_IR_SAME_DISTANCE;
 
                     stageToRightLaneLeftTurn++;
-                }
+                 }
                 else if (stageMoving == CONTINUE_ON_LEFT_LANE) {
                     // Move to the left lane: Passing stage.
                     vc.setSpeed(2);
                     vc.setSteeringWheelAngle(0);
+                                        cout<<"keep moving on the left lane straight forward"<<endl;
+
 
                     // Find end of object.
                     stageMeasuring = END_OF_OBJECT;
@@ -129,6 +142,8 @@ namespace automotive {
                     // Move to the right lane: Turn right part.
                     vc.setSpeed(1.5);
                     vc.setSteeringWheelAngle(25);
+                     cout<<"turn back to the right lane"<<endl;
+
 
                     stageToRightLaneRightTurn--;
                     if (stageToRightLaneRightTurn == 0) {
@@ -138,17 +153,16 @@ namespace automotive {
                 else if (stageMoving == TO_RIGHT_LANE_LEFT_TURN) {
                     // Move to the left lane: Turn left part.
                     vc.setSpeed(.9);
-                    vc.setSteeringWheelAngle(-5);
+                    vc.setSteeringWheelAngle(-25);
 
                     stageToRightLaneLeftTurn--;
                     if (stageToRightLaneLeftTurn == 0) {
                         // Start over.
-
-                        stageToRightLaneRightTurn = 0;
-                        stageToRightLaneLeftTurn = 15;
-
                         stageMoving = FORWARD;
                         stageMeasuring = FIND_OBJECT_INIT;
+
+                        stageToRightLaneRightTurn = 0;
+                       stageToRightLaneLeftTurn = 15;
 
                         distanceToObstacle = 0;
                         distanceToObstacleOld = 0;
@@ -172,7 +186,7 @@ namespace automotive {
                     distanceToObstacleOld = distanceToObstacle;
                 }
                 else if (stageMeasuring == FIND_OBJECT_PLAUSIBLE) {
-                    if (sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) < OVERTAKING_DISTANCE) {
+                    if (sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) < OVERTAKING_DISTANCE && sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) > 0) {
                         stageMoving = TO_LEFT_LANE_LEFT_TURN;
 
                         // Disable measuring until requested from moving state machine again.
@@ -214,6 +228,14 @@ namespace automotive {
                 }
 
                 // Create container for finally sending the data.
+                cout << "US front center: " << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) << endl;
+               cout << "US front Right: " << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) << endl;
+               cout << "IR front RIGHT: " << sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) << endl;
+               cout << "IR rear Right: " << sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) << endl;
+                cout << "Speed: " << vc.getSpeed() << endl;
+                cout << "Angle: " << vc.getSteeringWheelAngle() << endl;
+
+
                 Container c(vc);
                 // Send container.
                 getConference().send(c);

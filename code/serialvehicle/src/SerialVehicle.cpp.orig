@@ -70,7 +70,12 @@ void SerialVehicle::nextContainer(odcore::data::Container &c) {
     if (c.getDataType() == VehicleControl::ID()) {
             vc_count++;
             cout << "Message count: " <<vc_count << endl;
+<<<<<<< HEAD
            
+=======
+            if(true)
+            {
+>>>>>>> lanefollowing
                 VehicleControl vc = c.getData<VehicleControl> ();
                 int angle = (vc.getSteeringWheelAngle() * 10) + 16 ;
 
@@ -88,29 +93,31 @@ void SerialVehicle::nextContainer(odcore::data::Container &c) {
 
                 uint8_t cmd = (angle << 3) + speed;
 
-                cout << "VC speed: " << vc.getSpeed() << " VC angle: " << vc.getSteeringWheelAngle() << endl;
-//                cout << "Speed: " << speed << " Angle: " << angle << endl << "Command : " << std::bitset<8>(cmd) << endl ;
-//                float dangle = ((cmd >> 3) - 16) / 10.0;
-//                float dspeed = ((7 & cmd) * 6) / 10.0 ;
-//
-//                cout << "DSpeed: " << (7 & cmd) << " -> "<< dspeed << " DAngle: " << (cmd >> 3) <<" -> "<< dangle << endl ;
-//                stringstream cs;
-//                cs << "C" << setprecision(2) << vc.getSpeed() << ";" << vc.getSteeringWheelAngle() << "\r\n";
-//                string command = cs.str();
+                cout << "VC speed: " <<vc.getSpeed() << " VC angle: " << vc.getSteeringWheelAngle() << endl;
+                cout << "Speed: " << speed << " Angle: " << angle << endl << "Command : " << std::bitset<8>(cmd) << endl ;
 
-                if(m_previous_command != cmd)
-                {
-                    m_previous_command = cmd;
-                    m_serial->send(string(1, cmd));
-                    cout << "Sent command: " << cmd;
-                }
-                else
-                {
-                    cout << "Skipped command, identical to last" << endl;
-                }
 
+                float dangle = ((cmd >> 3) - 16) / 10.0;
+                float dspeed = ((7 & cmd) * 6) / 10.0 ;
+
+                cout << "DSpeed: " << (7 & cmd) << " -> "<< dspeed << " DAngle: " << (cmd >> 3) <<" -> "<< dangle << endl ;
+
+
+                stringstream cs;
+                cs << "C" << setprecision(2) << vc.getSpeed() << ";" << vc.getSteeringWheelAngle() << "\r\n";
+                string command = cs.str();
+
+<<<<<<< HEAD
+                m_serial->send(command);
+                cout << "Sent command: " << command;
+            
+=======
+                m_serial->send(string(1, cmd));
+                cout << "Sent command: " << cmd;
             }
+>>>>>>> lanefollowing
         }
+}
 
 void SerialVehicle::reconnect()
 {
@@ -120,4 +127,10 @@ void SerialVehicle::reconnect()
     m_serial->start();
 }
 
-}} // scaledcars::perception
+void SerialVehicle::nextString(const string &s)
+{
+    cout << "Received " << s.length() << " bytes: " << s << endl;
+}
+
+}
+} // scaledcars::perception

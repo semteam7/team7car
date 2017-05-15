@@ -41,6 +41,8 @@ namespace scaledcars {
         private:
             SerialHandler (const SerialHandler &) = delete;
             SerialHandler &operator=(const SerialHandler & ) = delete;
+            int m_odo_last_value;
+            int m_odo_wrap_count;
 
         public:
             SerialHandler (odcore::io::conference::ContainerConference &);

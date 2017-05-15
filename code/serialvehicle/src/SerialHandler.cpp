@@ -52,7 +52,7 @@ namespace team7 {
         cout << "End is " << end << endl;
         if( start > -1 && end > start)
         {
-            if((end - start) < 6)
+            if((end - start) < 5)
             {
                 cout << "wrong message length, skipping" << endl;
                 return;
@@ -60,9 +60,9 @@ namespace team7 {
 
             strcpy(reading, m_received.substr(start, end - start).c_str());
             cout << "Reading " << reading << endl;
-            int values[6];
+            int values[5];
 
-            for (int i=0;i<6;i++){
+            for (int i=0;i<5;i++){
                 values[i] = ((int) reading[i+1]) - 31;
             }
 

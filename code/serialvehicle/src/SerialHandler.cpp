@@ -66,22 +66,22 @@ namespace team7 {
                 values[i] = ((int) reading[i+1]) - 31;
             }
 
-            // handle odometry wrapping
-            if(values[5] < m_odo_last_value)
-            {
-                m_odo_wrap_count++;
-            }
-            m_odo_last_value = value[5];
+//            // handle odometry wrapping
+//            if(values[5] < m_odo_last_value)
+//            {
+//                m_odo_wrap_count++;
+//            }
+//            m_odo_last_value = value[5];
 
-            m_sensorboard_data.setNumberOfSensors(7);
+            m_sensorboard_data.setNumberOfSensors(5);
             std::map<uint32_t, double> distances{
                     {0, values[0]},
                     {1, values[2]},
                     {2, values[1]},
                     {3, values[3]},
                     {4, values[4]},
-                    {5, values[5]},
-                    {6, values[5] + (m_odo_wrap_count * 128)},
+                  // {5, values[5]},
+                  // {6, values[5] + (m_odo_wrap_count * 128)},
             };
             m_sensorboard_data.setMapOfDistances(distances);
             Container c(m_sensorboard_data);

@@ -35,12 +35,13 @@
 #include "opendavinci/GeneratedHeaders_OpenDaVINCI.h"
 
 #include "LaneFollower.h"
-#include <vector> 
+#include <vector>
+#include <cmath> 
 
 namespace automotive {
     namespace miniature {
 
-    
+
         IplImage* greyImage; // grey image from original image
         IplImage* cannyImage; // Canny image from grey image
 
@@ -53,16 +54,18 @@ namespace automotive {
         using namespace automotive::miniature;
 
         LaneFollower::LaneFollower(const int32_t &argc, char **argv) : TimeTriggeredConferenceClientModule(argc, argv, "lanefollower"),
-            m_hasAttachedToSharedImageMemory(false),
-            m_sharedImageMemory(),
-            m_image(NULL),
-            m_debug(false),
-            m_font(),
-            m_previousTime(),
-            m_eSum(0),
-            m_eOld(0),
-            m_messagecount(0),
-            m_vehicleControl() {}
+        m_hasAttachedToSharedImageMemory(false),
+        m_sharedImageMemory(),
+        m_image(NULL),
+        m_debug(false),
+        m_font(),
+        m_previousTime(),
+        m_eSum(0),
+        m_eOld(0),
+        m_messagecount(0),
+        m_stop(false),
+        m_stopTime(),
+        m_vehicleControl() {}
 
         LaneFollower::~LaneFollower() {}
 
@@ -91,15 +94,17 @@ namespace automotive {
 
         bool LaneFollower::readSharedImage(Container &c) {
             bool retVal = false;
-
+            
+            //m_stop = false;
+            
             if (c.getDataType() == odcore::data::image::SharedImage::ID()) {
                 SharedImage si = c.getData<SharedImage> ();
 
                 // Check if we have already attached to the shared memory.
                 if (!m_hasAttachedToSharedImageMemory) {
                     m_sharedImageMemory
-                            = odcore::wrapper::SharedMemoryFactory::attachToSharedMemory(
-                                    si.getName());
+                    = odcore::wrapper::SharedMemoryFactory::attachToSharedMemory(
+                        si.getName());
                 }
 
                 // Check if we could successfully attach to the shared memory.
@@ -115,8 +120,8 @@ namespace automotive {
                     // Copying the image data is very expensive...
                     if (m_image != NULL) {
                         memcpy(m_image->imageData,
-                               m_sharedImageMemory->getSharedMemory(),
-                               si.getWidth() * si.getHeight() * numberOfChannels);
+                           m_sharedImageMemory->getSharedMemory(),
+                           si.getWidth() * si.getHeight() * numberOfChannels);
                     }
 
                     // Mirror the image.
@@ -136,7 +141,7 @@ namespace automotive {
             cvCvtColor( m_image, greyImage, CV_BGR2GRAY );
 
             cannyImage = cvCreateImage(cvGetSize(m_image), IPL_DEPTH_8U, 1);
-                                                    
+
                                                    //5  5
             cvSmooth(greyImage, cannyImage, CV_GAUSSIAN, 5, 5);
 
@@ -151,19 +156,31 @@ namespace automotive {
             static bool useRightLaneMarking = true;
             double e = 0;
 
-
             const int32_t CONTROL_SCANLINE = 352; // calibrated length to right: 280px
             const int32_t distance = 160;
 
+             // TOP OF THE CAR LINE
+            CvScalar red2 = CV_RGB(255,0, 0);
+            cvLine(m_image, cvPoint(0, CONTROL_SCANLINE + 20), cvPoint(m_image->width, CONTROL_SCANLINE + 20), red2, 5, 8);
+
+
+
+            int leftPoint1;
+            int leftPoint2;
+            int rightPoint1;
+            int rightPoint2;
+
+
             // Search from middle to the top
-                
+
             // LINE 1
             CvScalar pixelTop;
             CvPoint top;
             top.y = -1;
-            top.x = m_image->width / 2 - 50;
-                
-            for(int y2 = CONTROL_SCANLINE; y2 > CONTROL_SCANLINE - 50; y2--) {
+            top.x = m_image->width / 2 - 15;
+
+            for(int y2 = CONTROL_SCANLINE; y2 > CONTROL_SCANLINE - 70; y2--) {
+
                 pixelTop = cvGet2D(cannyImage, y2, top.x);
                 if(pixelTop.val[0] >= 50){
                     top.y = y2;
@@ -175,9 +192,9 @@ namespace automotive {
             CvScalar pixelTop2;
             CvPoint top2;
             top2.y = -1;
-            top2.x = m_image->width / 2;
-                
-            for(int y2 = CONTROL_SCANLINE; y2 > CONTROL_SCANLINE - 50; y2--) {
+            top2.x = m_image->width / 2 + 15;
+
+            for(int y2 = CONTROL_SCANLINE; y2 > CONTROL_SCANLINE - 70; y2--) {
                 pixelTop2 = cvGet2D(cannyImage, y2, top2.x);
                 if(pixelTop2.val[0] >= 50){
                     top2.y = y2;
@@ -185,23 +202,12 @@ namespace automotive {
                 }
             }
 
-            // LINE 3
-            CvScalar pixelTop3;
-            CvPoint top3;
-            top3.y = -1;
-            top3.x = m_image->width / 2 + 50;
-                
-            for(int y2 = CONTROL_SCANLINE; y2 > CONTROL_SCANLINE - 50; y2--) {
-                pixelTop3 = cvGet2D(cannyImage, y2, top3.x);
-                if(pixelTop3.val[0] >= 50){
-                    top3.y = y2;
-                    break;
-                }
-            }
-
             TimeStamp beforeImageProcessing;
-            for(int32_t y = cannyImage->height - 8; y > cannyImage->height * .6; y -= 10) {
-                
+
+
+            // One time for loop
+            for(int32_t y = CONTROL_SCANLINE - 20; y <= CONTROL_SCANLINE + 20; y += 20) {
+
                 // Search from middle to the left:
                 CvScalar pixelLeft;
                 CvPoint left;
@@ -228,11 +234,9 @@ namespace automotive {
                         break;
                     }
                 }
-
-                
                 
 
-                if (y == CONTROL_SCANLINE) {
+                if ((y == CONTROL_SCANLINE) || (y == CONTROL_SCANLINE - 20)) {
 
                     if (m_debug) {
                         if (left.x > 0) {
@@ -253,11 +257,10 @@ namespace automotive {
                             cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 + 100, y - 2), &m_font, red);
                         }
 
-                        if (top.y > 0){
-                            // do something
+                        if (top.y > 0 && (y == CONTROL_SCANLINE)){
 
                             CvScalar blue = CV_RGB(0,0, 255);
-                            cvLine(m_image, cvPoint(m_image->width / 2 - 50, y), top, blue, 3, 8);
+                            cvLine(m_image, cvPoint(m_image->width / 2 - 15, y), top, blue, 3, 8);
                             
 
                             stringstream sstr;
@@ -266,11 +269,10 @@ namespace automotive {
 
                         }
 
-                        if (top2.y > 0){
-                            // do something
+                        if (top2.y > 0 && (y == CONTROL_SCANLINE)){
 
                             CvScalar blue = CV_RGB(0,0, 255);
-                            cvLine(m_image, cvPoint(m_image->width / 2, y), top2, blue, 3, 8);
+                            cvLine(m_image, cvPoint(m_image->width / 2 + 15, y), top2, blue, 3, 8);
                             
 
                             stringstream sstr;
@@ -278,22 +280,38 @@ namespace automotive {
                             cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2, y - 100), &m_font, blue);
 
                         }
-
-                        if (top3.y > 0){
-                            // do something
-
-                            CvScalar blue = CV_RGB(0,0, 255);
-                            cvLine(m_image, cvPoint(m_image->width / 2 + 50, y), top3, blue, 3, 8);
-                            
-
-                            stringstream sstr;
-                            sstr << ((m_image->height - 8) - top3.y);
-                            cvPutText(m_image, sstr.str().c_str(), cvPoint(m_image->width/2 + 50, y - 100), &m_font, blue);
-
-                        }
                     }
 
 
+
+                    if (y == CONTROL_SCANLINE){
+                        if (left.x != -1){
+                            leftPoint1 = m_image->width/2 - left.x;
+                        }
+
+                        if (right.x != -1){
+                            rightPoint1 = right.x - m_image->width/2;
+                        }
+                    }
+
+                    if (y == CONTROL_SCANLINE - 20){
+                        
+                        if (left.x != -1){
+                            leftPoint2 = m_image->width/2 - left.x;
+                        }
+
+                        if (right.x != -1){
+                            rightPoint2 = right.x - m_image->width/2;
+                        }
+                    }
+
+                    cerr << "LEFT 1: " << leftPoint1 << endl;
+
+                    cerr << "LEFT 2: " << leftPoint2 << endl;
+
+                    cerr << "RIGHT 1: " << rightPoint1 << endl;
+
+                    cerr << "RIGHT 2: " << rightPoint2 << endl;
                     // Calculate the deviation error.
                     if (right.x > 0) {
                         if (!useRightLaneMarking) {
@@ -325,9 +343,9 @@ namespace automotive {
             }
 
             TimeStamp afterImageProcessing;
-            cerr << "Processing time: " << (afterImageProcessing.toMicroseconds() - beforeImageProcessing.toMicroseconds())/1000.0 << "ms." << endl;
+            cerr << "Processing time: " << (afterImageProcessing.toMicroseconds() - beforeImageProcessing.toMicroseconds())/1000.0 << "ms." << endl; 
 
-    
+
 
             TimeStamp currentTime;
             double timeStep = (currentTime.toMicroseconds() - m_previousTime.toMicroseconds()) / (1000.0 * 1000.0);
@@ -336,9 +354,65 @@ namespace automotive {
             if (fabs(e) < 1e-2) {
                 m_eSum = 0;
             }
+
             else {
                 m_eSum += e;
             }
+
+            int topPoint1 = m_image->height - 8 - top.y;
+            //int point2 = m_image->height - 8 - top2.y;
+            //int point3 = m_image->height - 8 - top3.y;
+
+           // TimeStamp newCurrentTime;
+
+//             if ((point1 < 145 && point1 > 125 ) && (point2 < 145 && point2 > 125) && (point3 < 145 && point3 > 125)){
+// //                if ( abs(point1 - point2) < 10  && abs (point2 - point3) < 10 ) {
+//                     m_stop = true;
+
+//   //              }
+//            }
+
+
+            // Dont start car right next to a stop sign
+
+
+
+            if ((topPoint1 < 145 && topPoint1 > 125)){
+
+                if (m_stop == false){
+
+                    if ((currentTime.toMicroseconds() - m_stopTime.toMicroseconds()) > (5000 * 1000)){  
+                        m_stop = true;
+                        m_stopTime = currentTime;
+                    }
+                }
+            }  
+
+            int carSpeed = 2;
+
+            if (m_stop){
+
+                if ((currentTime.toMicroseconds() - m_stopTime.toMicroseconds()) > (3000 * 1000)){
+
+                    m_stop = false;
+                    carSpeed = 2;
+
+                    
+                } else {
+
+                    // Car must stop
+                    carSpeed = 0;
+                    cerr << "STOP CAR NOW" << endl;
+
+                }
+            } 
+
+
+            // else {
+
+            //if (newCurrentTime.toMicroseconds() - m_stopTime.toMicroseconds() > (1000 * 1000)){
+             //  m_stopTime = newCurrentTime;
+
 //            const double Kp = 2.5;
 //            const double Ki = 8.5;
 //            const double Kd = 0;
@@ -347,9 +421,9 @@ namespace automotive {
 //            m_messagecount++;
 //            cout << "MESSAGE COUNTER = " << m_messagecount << endl;
 
-             double Kp = m_kp;
-             double Ki = m_ki;
-             double Kd = m_kd;
+            double Kp = m_kp;
+            double Ki = m_ki;
+            double Kd = m_kd;
 
 //            if (m_messagecount % 500 == 0) {
 //                m_kp = Kp + 0.1;
@@ -376,18 +450,29 @@ namespace automotive {
                     desiredSteering = -25.0;
                 }
             }
+
             cerr << "PID: " << "e = " << e << ", eSum = " << m_eSum << ", desiredSteering = " << desiredSteering << ", y = " << y << endl;
 
 
-            // Go forward.
-            m_vehicleControl.setSpeed(2);
+                // TEST THIS
+            if (m_stop){
+
+                desiredSteering = 0;
+                
+            } 
+                // Go forward.
+            m_vehicleControl.setSpeed(carSpeed);
             m_vehicleControl.setSteeringWheelAngle(desiredSteering);
 
+                // Print Stop Case
+            stringstream sstop;
+            sstop << "stop: " << m_stop;
+            cvPutText(m_image, sstop.str().c_str(), cvPoint(20,90), &m_font, CV_RGB(120, 120, 120));
 
-            // Print DesiredSteering
+                // Print DesiredSteering
             stringstream ss;
             ss << "desiredSteering: " << desiredSteering << " : " << desiredSteering * 57.3 ;
-            cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(200, 0, 200));
+            cvPutText(m_image, ss.str().c_str(), cvPoint(20,50), &m_font, CV_RGB(0, 0, 200));
 
             stringstream s1;
             s1 << "Kp: " << Kp;
@@ -401,71 +486,88 @@ namespace automotive {
             s3 << "Kd: " << Kd;
             cvPutText(m_image, s3.str().c_str(), cvPoint(20,80), &m_font, CV_RGB(0, 0, 200));
 
-            // Show resulting features.
+            stringstream s4;
+            s4 << "LEFT 1 = " << leftPoint1;
+            cvPutText(m_image, s4.str().c_str(), cvPoint(20,90), &m_font, CV_RGB(0, 0, 200));
+
+            stringstream s5;
+            s5 << "LEFT 2 = " << leftPoint2;
+            cvPutText(m_image, s5.str().c_str(), cvPoint(20,100), &m_font, CV_RGB(0, 0, 200));
+
+            stringstream s6;
+            s6 << "RIGHT 1 = " << rightPoint1;
+            cvPutText(m_image, s6.str().c_str(), cvPoint(20,110), &m_font, CV_RGB(0, 0, 200));
+
+            stringstream s7;
+            s7 << "RIGHT 2 = " << rightPoint2;
+            cvPutText(m_image, s7.str().c_str(), cvPoint(20,120), &m_font, CV_RGB(0, 0, 200));
+
+                // Show resulting features.
             if (m_debug) {
                 if (m_image != NULL) {
-                    cvShowImage("Original", m_image); // original: m_image
-                    cvWaitKey(33);
-                    cvShowImage("Canny", cannyImage); // original: m_image
-                    cvWaitKey(33);
+                        cvShowImage("Original", m_image); // original: m_image
+                        cvWaitKey(33);
+                        cvShowImage("Canny", cannyImage); // original: m_image
+                        cvWaitKey(33);
+                    }
+              //  }
                 }
             }
-        }
 
         // This method will do the main data processing job.
         // Therefore, it tries to open the real camera first. If that fails, the virtual camera images from camgen are used.
-        odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode LaneFollower::body() {
+            odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode LaneFollower::body() {
             // Get configuration data.
-            KeyValueConfiguration kv = getKeyValueConfiguration();
-            m_debug = kv.getValue<int32_t> ("lanefollower.debug") == 1;
+                KeyValueConfiguration kv = getKeyValueConfiguration();
+                m_debug = kv.getValue<int32_t> ("lanefollower.debug") == 1;
 
             // Initialize fonts.
-            const double hscale = 0.4;
-            const double vscale = 0.3;
-            const double shear = 0.2;
-            const int thickness = 1;
-            const int lineType = 6;
+                const double hscale = 0.4;
+                const double vscale = 0.3;
+                const double shear = 0.2;
+                const int thickness = 1;
+                const int lineType = 6;
 
-            cvInitFont(&m_font, CV_FONT_HERSHEY_DUPLEX, hscale, vscale, shear, thickness, lineType);
+                cvInitFont(&m_font, CV_FONT_HERSHEY_DUPLEX, hscale, vscale, shear, thickness, lineType);
 
             // Parameters for overtaking.
-            const int32_t ULTRASONIC_FRONT_CENTER = 3;
-            const int32_t ULTRASONIC_FRONT_RIGHT = 4;
-            const int32_t INFRARED_FRONT_RIGHT = 0;
-            const int32_t INFRARED_REAR_RIGHT = 2;
+                const int32_t ULTRASONIC_FRONT_CENTER = 3;
+                const int32_t ULTRASONIC_FRONT_RIGHT = 4;
+                const int32_t INFRARED_FRONT_RIGHT = 0;
+                const int32_t INFRARED_REAR_RIGHT = 2;
 
-            const double OVERTAKING_DISTANCE = 5.5;
-            const double HEADING_PARALLEL = 0.04;
+                const double OVERTAKING_DISTANCE = 5.5;
+                const double HEADING_PARALLEL = 0.04;
 
             // Overall state machines for moving and measuring.
-            enum StateMachineMoving { FORWARD, TO_LEFT_LANE_LEFT_TURN, TO_LEFT_LANE_RIGHT_TURN, CONTINUE_ON_LEFT_LANE, TO_RIGHT_LANE_RIGHT_TURN, TO_RIGHT_LANE_LEFT_TURN };
-            enum StateMachineMeasuring { DISABLE, FIND_OBJECT_INIT, FIND_OBJECT, FIND_OBJECT_PLAUSIBLE, HAVE_BOTH_IR, HAVE_BOTH_IR_SAME_DISTANCE, END_OF_OBJECT };
+                enum StateMachineMoving { FORWARD, TO_LEFT_LANE_LEFT_TURN, TO_LEFT_LANE_RIGHT_TURN, CONTINUE_ON_LEFT_LANE, TO_RIGHT_LANE_RIGHT_TURN, TO_RIGHT_LANE_LEFT_TURN };
+                enum StateMachineMeasuring { DISABLE, FIND_OBJECT_INIT, FIND_OBJECT, FIND_OBJECT_PLAUSIBLE, HAVE_BOTH_IR, HAVE_BOTH_IR_SAME_DISTANCE, END_OF_OBJECT };
 
-            StateMachineMoving stageMoving = FORWARD;
-            StateMachineMeasuring stageMeasuring = FIND_OBJECT_INIT;
+                StateMachineMoving stageMoving = FORWARD;
+                StateMachineMeasuring stageMeasuring = FIND_OBJECT_INIT;
 
             // State counter for dynamically moving back to right lane.
-            int32_t stageToRightLaneRightTurn = 0;
-            int32_t stageToRightLaneLeftTurn = 0;
+                int32_t stageToRightLaneRightTurn = 0;
+                int32_t stageToRightLaneLeftTurn = 0;
 
             // Distance variables to ensure we are overtaking only stationary or slowly driving obstacles.
-            double distanceToObstacle = 0;
-            double distanceToObstacleOld = 0;
+                double distanceToObstacle = 0;
+                double distanceToObstacleOld = 0;
 
             // Overall state machine handler.
-            while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-                bool has_next_frame = false;
+                while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+                    bool has_next_frame = false;
 
                 // Get the most recent available container for a SharedImage.
-                Container c = getKeyValueDataStore().get(odcore::data::image::SharedImage::ID());
+                    Container c = getKeyValueDataStore().get(odcore::data::image::SharedImage::ID());
 
-                if (c.getDataType() == odcore::data::image::SharedImage::ID()) {
+                    if (c.getDataType() == odcore::data::image::SharedImage::ID()) {
                     // Example for processing the received container.
-                    has_next_frame = readSharedImage(c);
-                }
+                        has_next_frame = readSharedImage(c);
+                    }
 
                 // Process the read image and calculate regular lane following set values for control algorithm.
-                if (true == has_next_frame) {
+                    if (true == has_next_frame) {
                     canny(); // Apply canny algorithm on the image
                     processImage();
                 }

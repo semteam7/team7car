@@ -123,8 +123,8 @@ namespace automotive {
                             && (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0)) {
                             cout << "gap 7 " << endl;
                             cout << "gap size " << gap_size << endl;
-                            stageMoving = 0;
-                            hardMoving = 1;
+                            stageMoving = 2;
+                         //   hardMoving = 1;
                         } else if (gap_size >= 14) {
                             cout << "gap 10" << endl;
                             cout << "gap size " << gap_size << endl;
@@ -158,8 +158,8 @@ namespace automotive {
                         stageMoving++;
                     }
                     if (stageMoving == 6) {
-                        if ((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 14)
-                            || (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0)) {
+                        if (((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 5)
+                            || (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0))) {
                             vc.setSpeed(-1.3);
                             vc.setSteeringWheelAngle(25);
                             cout << "turn right " << stageMoving << endl;
@@ -174,20 +174,30 @@ namespace automotive {
                     if (stageMoving == 7) {
                         if (((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 1)
                              || (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 0))
-                            && ((sbd.getValueForKey_MapOfDistances(INFRARED_REAR) > 1)
+                            && ((sbd.getValueForKey_MapOfDistances(INFRARED_REAR) > 5)
                                 || (sbd.getValueForKey_MapOfDistances(INFRARED_REAR) < 0))) {
                             vc.setSpeed(-0.3);
                             vc.setSteeringWheelAngle(-25);
                             cout << "turn left " << stageMoving << endl;
                             //cout << sbd.getValueForKey_MapOfDistances(INFRARED_REAR) << " infrared " << endl;
-                        } else if ((sbd.getValueForKey_MapOfDistances(INFRARED_REAR) > 1)
-                                   || (sbd.getValueForKey_MapOfDistances(INFRARED_REAR) < 0)) {
-                            //  cout << "stop " << endl;
+                        } else{
                             cout << "stopping " << stageMoving << endl;
                             vc.setSteeringWheelAngle(0);
                             vc.setSpeed(0);
+                        stageMoving++;
                         }
                     }
+
+                if(stageMoving == 8 && (sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) > 15)) {
+                    vc.setSpeed(2);
+                    vc.setSteeringWheelAngle(25);
+                }
+
+                else if (stageMoving == 8 && (sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) < 15)){
+                    vc.setSpeed(0);
+                    vc.setSteeringWheelAngle(0);
+                }
+
                     if (hardMoving >= 1) {
                         if ((hardMoving > 0) && (hardMoving < 5)) {
                             // Move slightly forward.

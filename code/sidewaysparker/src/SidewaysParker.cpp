@@ -188,7 +188,8 @@ namespace automotive {
                         }
                     }
 
-                if(stageMoving == 8 && (sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) > 15)) {
+                if(stageMoving == 8 && ((sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) > 15)
+                        || (sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) < 0))) {
                     vc.setSpeed(2);
                     vc.setSteeringWheelAngle(25);
                 }

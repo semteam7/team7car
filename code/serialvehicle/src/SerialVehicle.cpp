@@ -70,7 +70,7 @@ void SerialVehicle::nextContainer(odcore::data::Container &c) {
     if (c.getDataType() == VehicleControl::ID()) {
             vc_count++;
             cout << "Message count: " <<vc_count << endl;
-            if(vc_count % 15 == 0)
+            if(true)
             {
                 VehicleControl vc = c.getData<VehicleControl> ();
 

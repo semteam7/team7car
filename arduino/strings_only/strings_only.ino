@@ -7,9 +7,9 @@
 #define GAIN_REGISTER 0x09
 #define LOCATION_REGISTER 0x18
 
-#define MOCK false
-#define SENSE false
-
+#define MOCK  false
+#define SENSE true
+#define DEBUG false
 
 #define RADIO_MOTOR_PIN 4  
 #define RADIO_SERVO_PIN 5  
@@ -59,6 +59,8 @@ int ledPin = 13;
 void setup() {
   //pinMode(ledPin, OUTPUT);
   
+  Serial.begin(115200);
+  
   pinMode(ESC_PIN, OUTPUT);
   pinMode(SERVO_CONTROL_PIN, OUTPUT);
   pinMode(RADIO_MOTOR_PIN, INPUT);
@@ -69,16 +71,9 @@ void setup() {
   sonar1.begin();
   sonar2.begin();
    
-  initSerial();
   //digitalWrite(ledPin, HIGH);
   delay(1000);
-  esc.write(90);
-}
-
-
-void initSerial()
-{
-  Serial.begin(115200);
+  esc.write(90);  
 }
 
 int rcThrottleValue, rcSteeringValue;
@@ -103,24 +98,23 @@ void readFromSerial() {
   String command;
   float carSpeed = 0;
   float carAngle = 0;
-
-    if(Serial.available()) {
-      while (Serial.available() > 1) {
-        Serial.read();
-      }
-
-      byte cmd = Serial.read();
-      carAngle = ((cmd >> 3) - 16) / 10.0;
-      carSpeed = ((7 & cmd) * 6) / 10.0 ;
-      
-      executeVehicleCommand(carSpeed, carAngle);
+  
+  if(Serial.available()) {
+    while (Serial.available() > 1) {
+      Serial.read();
     }
+
+    byte cmd = Serial.read();
+    carAngle = ((cmd >> 3) - 16) / 10.0;
+    carSpeed = ((7 & cmd) * 6) / 10.0 ;
+    
+    executeVehicleCommand(carSpeed, carAngle);
   }
+}
 
 
-boolean serialDebug = true;
 void error(String reason){
-  if(serialDebug)
+  if(DEBUG)
   {
     Serial.print("Error, reason: ");
     Serial.println(reason);
@@ -129,37 +123,28 @@ void error(String reason){
 
 void executeVehicleCommand(float carSpeed, float carAngle)
 {
-  if (carAngle > 1.4){
-      carAngle =  1.4; 
+  if (carAngle > 1.5){
+      carAngle =  1.5; 
     }
-    else if (carAngle < -1.4){
-      carAngle = (-1.4);
+    else if (carAngle < -1.5){
+      carAngle = (-1.5);
     }
     carAngle = (carAngle * 57.3)  + 90;
 
-    if(carSpeed > 1)
-    {
-      carSpeed = 1595;//1580
-    }
-    else if(carSpeed > 0)
-    {
-      carSpeed = 1590;
-    }
-    else if(carSpeed == 0)
-    {
-      carSpeed = 1500;
-    }
-    else if(carSpeed > -1)
-    {
-      carSpeed = 1400;
-    }
-    else
-    {
-      carSpeed = 1360;
-    }
+    if     ( carSpeed >  1 ) { carSpeed = 1595; } //1580
+    else if( carSpeed >  0 ) { carSpeed = 1590; }
+    else if( carSpeed == 0 ) { carSpeed = 1500; }
+    else if( carSpeed > -1 ) { carSpeed = 1400; }
+    else                     { carSpeed = 1360; }
 
-    Serial.print("Setting car speed to : ");
-    Serial.println(carSpeed);
+    if(DEBUG) 
+    {
+      Serial.print("Setting car speed to : ");
+      Serial.println(carSpeed);
+      Serial.print("Setting car angle to : ");
+      Serial.println(carAngle);
+    }
+    
     esc.writeMicroseconds(carSpeed);
     steering.write(carAngle);
 }

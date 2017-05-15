@@ -72,6 +72,7 @@ using namespace odcore::wrapper;
     //VehicleControl vc_buffer[];
     SerialHandler m_serialHandler;
     int vc_count = 0;
+    char m_previous_command;
     const chrono::time_point<chrono::system_clock> m_connected_at;
 };
 }

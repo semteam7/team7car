@@ -98,9 +98,17 @@ void SerialVehicle::nextContainer(odcore::data::Container &c) {
 //                cs << "C" << setprecision(2) << vc.getSpeed() << ";" << vc.getSteeringWheelAngle() << "\r\n";
 //                string command = cs.str();
 
+                if(m_previous_command != cmd)
+                {
+                    m_previous_command = cmd;
+                    m_serial->send(string(1, cmd));
+                    cout << "Sent command: " << cmd;
+                }
+                else
+                {
+                    cout << "Skipped command, identical to last" << endl;
+                }
 
-                m_serial->send(string(1, cmd));
-                cout << "Sent command: " << cmd;
             }
         }
 

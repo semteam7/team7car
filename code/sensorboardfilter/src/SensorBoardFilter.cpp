@@ -63,17 +63,7 @@ Test if 10 is too many or too few messages in correlation with performance
 */
 void SensorBoardFilter::nextContainer(odcore::data::Container &c) {
     if (c.getDataType() == RawSensorBoardData::ID()) {
-
-
-            rsbd_count++;
-            cout << "Message count: " <<rsbd_count << endl;
             RawSensorBoardData rsbd = c.getData<RawSensorBoardData>();
-
-            cout << "rsbd usFC: " << rsbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) << endl;
-            cout << "rsbd usFR: " << rsbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) << endl;
-            cout << "rsbd irFR: " << rsbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) << endl;
-            cout << "rsbd irRR: " << rsbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) << endl;
-            cout << "rsbd irR:  " << rsbd.getValueForKey_MapOfDistances(INFRARED_REAR) << endl;
 
             usFrontcenter = rsbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER);
             if(usFrontcenter > 59){
@@ -83,40 +73,29 @@ void SensorBoardFilter::nextContainer(odcore::data::Container &c) {
             if(usFrontright > 59){
               usFrontright = 0;
             }
+
             irFrontright = rsbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
             irRearright = rsbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
             irRear = rsbd.getValueForKey_MapOfDistances(INFRARED_REAR);
 
-          //  if(rsbd_count%3 == 0){
+            values[3] = getKalmanValue(usFrontcenter, 3);
+            values[4] = getKalmanValue(usFrontright, 4);
+            values[0] = getKalmanValue(irFrontright, 0);
+            values[2] = getKalmanValue(irRearright, 2);
+            values[1] = getKalmanValue(irRear, 1);
 
-                values[3] = getKalmanValue(usFrontcenter, 3);
-                values[4] = getKalmanValue(usFrontright, 4);
-                values[0] = getKalmanValue(irFrontright, 0);
-                values[2] = getKalmanValue(irRearright, 2);
-                values[1] = getKalmanValue(irRear, 1);
+            m_sensorboard_data.setNumberOfSensors(5);
+            std::map<uint32_t, double> distances{
+                  {0, values[0]},
+                  {1, values[1]},
+                  {2, values[2]},
+                  {3, values[3]},
+                  {4, values[4]}
+            };
 
-
-                m_sensorboard_data.setNumberOfSensors(6);
-                std::map<uint32_t, double> distances{
-                      {0, values[0]},
-                      {1, values[1]},
-                      {2, values[2]},
-                      {3, values[3]},
-                      {4, values[4]},
-                      {5, usFrontcenter}
-                };
-
-                m_sensorboard_data.setMapOfDistances(distances);
-                Container c2(m_sensorboard_data);
-                getConference().send(c2);
-
-
-                cout << "usFC " << m_sensorboard_data.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) << endl;
-                cout << "usFR " << m_sensorboard_data.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) << endl;
-                cout << "irFR " << m_sensorboard_data.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) << endl;
-                cout << "irRR " << m_sensorboard_data.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) << endl;
-                cout << "irR  " << m_sensorboard_data.getValueForKey_MapOfDistances(INFRARED_REAR) << endl;
-             //}
+            m_sensorboard_data.setMapOfDistances(distances);
+            Container c2(m_sensorboard_data);
+            getConference().send(c2);
         }
     }
 }

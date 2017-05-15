@@ -41,8 +41,7 @@ namespace scaledcars {
         private:
             SerialHandler (const SerialHandler &) = delete;
             SerialHandler &operator=(const SerialHandler & ) = delete;
-            int m_odo_last_value;
-            int m_odo_wrap_count;
+
 
         public:
             SerialHandler (odcore::io::conference::ContainerConference &);
@@ -51,6 +50,8 @@ namespace scaledcars {
             RawSensorBoardData m_sensorboard_data;
             ContainerConference &m_conference;
             string m_received;
+            int m_odo_last_value;
+            int m_odo_wrap_count;
             virtual void nextString(const string &s);
         };
     }

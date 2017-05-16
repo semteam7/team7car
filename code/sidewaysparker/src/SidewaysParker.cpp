@@ -138,13 +138,13 @@ namespace automotive {
                             */
 
 
-                        if (((gap_size - gap_measure) == 140)
+                        if (((gap_size - gap_measure) >= 140 && (gap_size - gap_measure) < 180)
                             && (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0)) {
                             cout << "gap 7 " << endl;
                             cout << "gap measure " << gap_measure << endl;
                             stageMoving = 2;
                          //   hardMoving = 1;
-                        } else if ((gap_size -  gap_measure) == 180) {
+                        } else if ((gap_size -  gap_measure) >= 180) {
                             cout << "gap 10" << endl;
                             cout << "gap measure " << gap_measure << endl;
                             stageMoving = 0;

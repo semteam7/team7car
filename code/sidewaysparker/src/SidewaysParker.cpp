@@ -1,4 +1,3 @@
-
 /**
  * sidewaysparker - Sample application for realizing a sideways parking car.
  * Copyright (C) 2012 - 2015 Christian Berger
@@ -337,3 +336,7 @@ namespace automotive {
         }
     }
 } // automotive::miniature
+
+    Contact GitHub API Training Shop Blog About 
+
+

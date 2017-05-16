@@ -84,13 +84,16 @@ void SensorBoardFilter::nextContainer(odcore::data::Container &c) {
             values[2] = getKalmanValue(irRearright, 2);
             values[1] = getKalmanValue(irRear, 1);
 
+            cout << "Odometer: " << rsbd.getValueForKey_MapOfDistances(ODOMETER) << endl;
+
             m_sensorboard_data.setNumberOfSensors(5);
             std::map<uint32_t, double> distances{
                   {0, values[0]},
                   {1, values[1]},
                   {2, values[2]},
                   {3, values[3]},
-                  {4, values[4]}
+                  {4, values[4]},
+                  {6, rsbd.getValueForKey_MapOfDistances(ODOMETER)},
             };
 
             m_sensorboard_data.setMapOfDistances(distances);

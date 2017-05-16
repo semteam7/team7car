@@ -1,6 +1,6 @@
 #!/bin/bash
 export conf=~/DIT-168 
-export FREQ=10
+export FREQ=20
 
 PS3='> '
 DEBUG=true

@@ -95,6 +95,9 @@ namespace automotive {
                 double m_eSum;
                 double m_eOld;
                 int m_messagecount;
+                bool m_stop;
+                odcore::data::TimeStamp m_stopTime;
+                
 
                 automotive::VehicleControl m_vehicleControl;
 

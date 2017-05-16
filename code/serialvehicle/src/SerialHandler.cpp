@@ -52,7 +52,7 @@ namespace team7 {
         cout << "End is " << end << endl;
         if( start > -1 && end > start)
         {
-            if((end - start) < 5)
+            if((end - start) < 6)
             {
                 cout << "wrong message length, skipping" << endl;
                 return;
@@ -60,28 +60,29 @@ namespace team7 {
 
             strcpy(reading, m_received.substr(start, end - start).c_str());
             cout << "Reading " << reading << endl;
-            int values[5];
+            int values[6];
 
-            for (int i=0;i<5;i++){
+            for (int i=0;i<6;i++){
                 values[i] = ((int) reading[i+1]) - 31;
             }
 
-//            // handle odometry wrapping
-//            if(values[5] < m_odo_last_value)
-//            {
-//                m_odo_wrap_count++;
-//            }
-//            m_odo_last_value = value[5];
+            // handle odometry wrapping
+            if(values[5] < m_odo_last_value)
+            {
+                m_odo_wrap_count++;
+            }
+            m_odo_last_value = values[5];
 
-            m_sensorboard_data.setNumberOfSensors(5);
+            cout << "odometer : " << values[5] << " -> " << values[5] + (m_odo_wrap_count * 96) << " ("<< m_odo_wrap_count << ")" << endl;
+
+            m_sensorboard_data.setNumberOfSensors(6);
             std::map<uint32_t, double> distances{
                     {0, values[0]},
                     {1, values[2]},
                     {2, values[1]},
                     {3, values[3]},
                     {4, values[4]},
-                  // {5, values[5]},
-                  // {6, values[5] + (m_odo_wrap_count * 128)},
+                    {6, values[5] + (m_odo_wrap_count * 96)},
             };
             m_sensorboard_data.setMapOfDistances(distances);
             Container c(m_sensorboard_data);

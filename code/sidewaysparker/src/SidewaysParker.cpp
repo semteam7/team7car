@@ -51,17 +51,20 @@ namespace automotive {
             const double ULTRASONIC_FRONT_CENTER = 3;
             //const double ULTRASONIC_FRONT_RIGHT = 4;
             // const double ULTRASONIC_REAR_RIGHT = 5;
+            const double ODOMETER = 6;
+
+
             //double distanceOld = 0;
-            // int absPathStart = 0;
+            int gap_measure = 0;
             // int absPathEnd = 0;
             //double gap_size = 0;
-            int stageMoving = 2;
+            int stageMoving = 1;
             int hardMoving = 0;
             int sensor_counter = 0;
-            int sensor_time = 3;
+            //int sensor_time = 3;
             int anomaly = 0;
             // char stageMeasuring = 0;
-            double gap_size = 0;
+            int gap_size = 0;
             while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
                 // 1. Get most recent vehicle data:
                 Container containerVehicleData = getKeyValueDataStore().get(automotive::VehicleData::ID());
@@ -75,8 +78,15 @@ namespace automotive {
                 cout << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) << " ultrasonic front center" << endl;
                 //cout << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) << " ultrasonic front right" << endl;
                 //cout << vd.getAbsTraveledPath() << " THE DAMN TRAVELLED PATH" << endl;
+                cout << sbd.getValueForKey_MapOfDistances(ODOMETER) << " ODOMETER" << endl;
+                cout << gap_size << " gap size" << endl;
+                cout << gap_measure << "gap measure " << endl;
+                //cout << sensor_counter << " sensor counter " << endl;
 
-                    // Create vehicle control data.
+
+
+
+                // Create vehicle control data.
                     // Moving state machine.
 
                     if (stageMoving == 1) {
@@ -84,12 +94,29 @@ namespace automotive {
                         //  absPathEnd = vd.getAbsTraveledPath();
                         vc.setSpeed(2);
                         vc.setSteeringWheelAngle(0);
+                        gap_size = sbd.getValueForKey_MapOfDistances(ODOMETER) - gap_measure;
+                        cout << gap_size - gap_measure << " gap size" << endl;
+
                         //cout << "path end " << absPathEnd << endl;
                         //cout << "path start " << absPathStart << endl;
-                        cout << "gap_size  " << gap_size << endl;
+                        //cout << "gap_size  " << gap_size << endl;
                         //cout << "gap size 1 " << gap_size << endl;
-                        cout << "sensor counter " << sensor_counter << endl;
-                        cout << "sensor time " << sensor_time << endl;
+                        //cout << "sensor counter " << sensor_counter << endl;
+                        //cout << "sensor time " << sensor_time << endl;
+
+
+                        if (((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 5)
+                             ||(sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 20))
+                                && (sensor_counter == 0)){
+
+                            gap_measure = sbd.getValueForKey_MapOfDistances(ODOMETER);
+                            sensor_counter++;
+                            //cout << sensor_counter << " sensor counter" << endl;
+
+                        }
+
+
+                        /*
                         if (((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 5)
                              ||(sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 20))
                             && (sensor_counter < sensor_time)) {
@@ -101,6 +128,7 @@ namespace automotive {
                             gap_size++;
                             sensor_counter = 0;
                         }
+                         */
 /*
       //New code for finding a gap
                             if ((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 0)
@@ -108,15 +136,17 @@ namespace automotive {
                                 gap_size++;
                             }
                             */
-                        if (gap_size >= 7
+
+
+                        if (((gap_size - gap_measure) == 140)
                             && (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0)) {
                             cout << "gap 7 " << endl;
-                            cout << "gap size " << gap_size << endl;
+                            cout << "gap measure " << gap_measure << endl;
                             stageMoving = 2;
                          //   hardMoving = 1;
-                        } else if (gap_size >= 14) {
+                        } else if ((gap_size -  gap_measure) == 180) {
                             cout << "gap 10" << endl;
-                            cout << "gap size " << gap_size << endl;
+                            cout << "gap measure " << gap_measure << endl;
                             stageMoving = 0;
                             hardMoving = 1;
                         }
@@ -125,16 +155,17 @@ namespace automotive {
                                  && anomaly < 1){
                             anomaly++;
                         }
-                        else if ((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 2)
+                        else if ((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 20)
                                  &&(sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 5)
                                  && anomaly == 1){
-                            gap_size = 0;
+                            gap_measure = 0;
+                            sensor_counter = 0;
                             anomaly = 0;
                         }
                         //End of gap finding code
                     }
                     if ((stageMoving > 1) && (stageMoving < 5)) {
-                        cout << "gap size " << gap_size << endl;
+                        //cout << "gap size " << gap_size << endl;
                         cout << "normal moving " << stageMoving << endl;
                         // Move slightly forward.
                         vc.setSpeed(.4);

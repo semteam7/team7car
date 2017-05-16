@@ -7,9 +7,10 @@
 #define GAIN_REGISTER 0x09
 #define LOCATION_REGISTER 0x18
 
-#define MOCK  false
-#define SENSE true
-#define DEBUG false
+#define MOCK     false
+#define SENSE    true
+#define DEBUG    false
+#define ODOMETRY true
 
 #define RADIO_MOTOR_PIN 4  
 #define RADIO_SERVO_PIN 5  
@@ -54,7 +55,17 @@ Servo esc, steering;
 
 int ledPin = 13;
 
+int ODOA = 5; // Odometer A. Not used for now
+int ODOB = 3; // Odometer B
 
+volatile char odocount=0; // Odometer interrupt counter.
+void updateCounter(){ 
+  odocount++; 
+  if(odocount > 96)
+  {
+    odocount = 0;
+  }
+}
 
 void setup() {
   //pinMode(ledPin, OUTPUT);
@@ -70,6 +81,11 @@ void setup() {
   
   sonar1.begin();
   sonar2.begin();
+
+  if(ODOMETRY)
+  {
+    attachInterrupt(digitalPinToInterrupt(ODOB), updateCounter, CHANGE);
+  }
    
   //digitalWrite(ledPin, HIGH);
   delay(1000);
@@ -111,7 +127,6 @@ void readFromSerial() {
     executeVehicleCommand(carSpeed, carAngle);
   }
 }
-
 
 void error(String reason){
   if(DEBUG)
@@ -184,7 +199,7 @@ char readUSSensor(int address)
   byte lowByte = Wire.read();                           // Get low byte
   range = (highByte << 8) + lowByte;
 
-  if(range > 45 || range < 0)
+  if(range > 90 || range < 0)
   {
     range = -1;
   }
@@ -211,6 +226,7 @@ void sendSensorData(){
   sensorData += readIRSensor(IR_3);
   sensorData += readUSSensor(US_1);
   sensorData += readUSSensor(US_2);
+  if(ODOMETRY){ sensorData += (char)(odocount + 31);}
   
   Serial.println(sensorData);
 }

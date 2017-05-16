@@ -58,6 +58,7 @@ class SensorBoardFilter : public odcore::base::module::DataTriggeredConferenceCl
     const double INFRARED_REAR_RIGHT = 2;
     const double ULTRASONIC_FRONT_CENTER = 3;
     const double ULTRASONIC_FRONT_RIGHT = 4;
+    const double ODOMETER = 6;
     double values[5];
 
     //Kalman components

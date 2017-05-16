@@ -73,15 +73,16 @@ namespace team7 {
             }
             m_odo_last_value = values[5];
 
-            m_sensorboard_data.setNumberOfSensors(7);
+            cout << "odometer : " << values[5] << " -> " << values[5] + (m_odo_wrap_count * 96) << " ("<< m_odo_wrap_count << ")" << endl;
+
+            m_sensorboard_data.setNumberOfSensors(6);
             std::map<uint32_t, double> distances{
                     {0, values[0]},
                     {1, values[2]},
                     {2, values[1]},
                     {3, values[3]},
                     {4, values[4]},
-                    {5, values[5]},
-                    {6, values[5] + (m_odo_wrap_count * 128)},
+                    {6, values[5] + (m_odo_wrap_count * 96)},
             };
             m_sensorboard_data.setMapOfDistances(distances);
             Container c(m_sensorboard_data);

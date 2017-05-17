@@ -45,7 +45,7 @@ int SPEED_INPUT;
 int STEERING_INPUT;
 
 int IR_DISTANCE_FACTOR = 12.5;
-int IR_DISTANCE_CUTOFF = 40;
+int IR_DISTANCE_CUTOFF = 18;
 
 char US_UNIT = 'c';
 SonarSRF08 sonar1(US_1, GAIN_REGISTER, LOCATION_REGISTER);
@@ -171,9 +171,7 @@ char readIRSensor(int pin)
   float v = analogRead(pin) * (5.0 / 1023.0); //scale analog read value to voltage
   float d = IR_DISTANCE_FACTOR / v;           //get distance in centimeters
   if(d > IR_DISTANCE_CUTOFF) { d = -1; }    //if above cutoff, return -1
-
-
-  return ((char) d) + 31;
+  return ((char) d) + 33;
 }
 
 char readUSSensor(int address)
@@ -199,12 +197,12 @@ char readUSSensor(int address)
   byte lowByte = Wire.read();                           // Get low byte
   range = (highByte << 8) + lowByte;
 
-  if(range > 90 || range < 0)
+  if(range > 45 || range <= 0)
   {
     range = -1;
   }
   
-  return ((char) range) + 31;
+  return ((char) range) + 33;
 }
 
 //int getRequestedSpeed(){
@@ -226,7 +224,7 @@ void sendSensorData(){
   sensorData += readIRSensor(IR_3);
   sensorData += readUSSensor(US_1);
   sensorData += readUSSensor(US_2);
-  if(ODOMETRY){ sensorData += (char)(odocount + 31);}
+  if(ODOMETRY){ sensorData += (char)(odocount + 33);}
   
   Serial.println(sensorData);
 }

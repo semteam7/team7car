@@ -63,7 +63,7 @@ namespace team7 {
             int values[6];
 
             for (int i=0;i<6;i++){
-                values[i] = ((int) reading[i+1]) - 31;
+                values[i] = ((int) reading[i+1]) - 33;
             }
 
             // handle odometry wrapping

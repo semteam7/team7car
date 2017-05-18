@@ -44,6 +44,7 @@ namespace automotive {
 
         IplImage* greyImage; // grey image from original image
         IplImage* cannyImage; // Canny image from grey image
+        bool isOvertaking = false;
 
 
         using namespace std;
@@ -634,9 +635,10 @@ namespace automotive {
                 const int32_t ULTRASONIC_FRONT_RIGHT = 4;
                 const int32_t INFRARED_FRONT_RIGHT = 0;
                 const int32_t INFRARED_REAR_RIGHT = 2;
+                const int32_t ODOMETER = 6;
 
-                const double OVERTAKING_DISTANCE = 5.5;
-                const double HEADING_PARALLEL = 0.04;
+                const double OVERTAKING_DISTANCE = 45;  
+                const double HEADING_PARALLEL = 1; //0.04
 
             // Overall state machines for moving and measuring.
                 enum StateMachineMoving { FORWARD, TO_LEFT_LANE_LEFT_TURN, TO_LEFT_LANE_RIGHT_TURN, CONTINUE_ON_LEFT_LANE, TO_RIGHT_LANE_RIGHT_TURN, TO_RIGHT_LANE_LEFT_TURN };
@@ -644,14 +646,17 @@ namespace automotive {
 
                 StateMachineMoving stageMoving = FORWARD;
                 StateMachineMeasuring stageMeasuring = FIND_OBJECT_INIT;
+                int startOvertaking = 0;
+                int midOvertaking = 0;
+                int endOvertaking = 0;
+                int odoResult = 0;
 
-            // State counter for dynamically moving back to right lane.
-                int32_t stageToRightLaneRightTurn = 0;
-                int32_t stageToRightLaneLeftTurn = 0;
+
+            bool toLeftLaneRightTurn = false;
 
             // Distance variables to ensure we are overtaking only stationary or slowly driving obstacles.
-                double distanceToObstacle = 0;
-                double distanceToObstacleOld = 0;
+            double distanceToObstacle = 0;
+            double distanceToObstacleOld = 0;
 
             // Overall state machine handler.
                 while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
@@ -666,7 +671,7 @@ namespace automotive {
                     }
 
                 // Process the read image and calculate regular lane following set values for control algorithm.
-                    if (true == has_next_frame) {
+                    if (true == has_next_frame && !isOvertaking) {
                     canny(); // Apply canny algorithm on the image
                     processImage();
                 }
@@ -681,140 +686,230 @@ namespace automotive {
                     // 2. Get most recent sensor board data:
                     Container containerSensorBoardData = getKeyValueDataStore().get(automotive::miniature::SensorBoardData::ID());
                     SensorBoardData sbd = containerSensorBoardData.getData<SensorBoardData> ();
+ // Moving state machine.
+                if (stageMoving == FORWARD) {
+                    // Go forward.
+                  //  vc.setSpeed(2);
+                   // vc.setSteeringWheelAngle(0);
+                    // cout<<"moves forward"<<endl;
+                    startOvertaking = sbd.getValueForKey_MapOfDistances(ODOMETER);
+                    // cout<<"startOvertaking" << startOvertaking <<endl;
 
-                    // Moving state machine.
-                    if (stageMoving == FORWARD) {
-                        // Use m_vehicleControl data from image processing.
 
-                        stageToRightLaneLeftTurn = 0;
-                        stageToRightLaneRightTurn = 0;
-                    }
-                    else if (stageMoving == TO_LEFT_LANE_LEFT_TURN) {
-                        // Move to the left lane: Turn left part until both IRs see something.
-                        //m_vehicleControl.setSpeed(1);
-                        //m_vehicleControl.setSteeringWheelAngle(-25);
 
-                        // State machine measuring: Both IRs need to see something before leaving this moving state.
-                        stageMeasuring = HAVE_BOTH_IR;
+                }
 
-                        stageToRightLaneRightTurn++;
-                    }
-                    else if (stageMoving == TO_LEFT_LANE_RIGHT_TURN) {
-                        // Move to the left lane: Turn right part until both IRs have the same distance to obstacle.
-                        //m_vehicleControl.setSpeed(1);
-                        //m_vehicleControl.setSteeringWheelAngle(25);
+                else if (stageMoving == TO_LEFT_LANE_LEFT_TURN) {
+                    isOvertaking = true;
+                    // Move to the left lane: Turn left part until both IRs see something.
+                    midOvertaking = sbd.getValueForKey_MapOfDistances(ODOMETER);
+                    cout<<"midOvertaking " << midOvertaking <<endl;
 
-                        // State machine measuring: Both IRs need to have the same distance before leaving this moving state.
-                        stageMeasuring = HAVE_BOTH_IR_SAME_DISTANCE;
 
-                        stageToRightLaneLeftTurn++;
-                    }
-                    else if (stageMoving == CONTINUE_ON_LEFT_LANE) {
-                        // Move to the left lane: Passing stage.
+                    m_vehicleControl.setSpeed(1);
+                    m_vehicleControl.setSteeringWheelAngle(-1);
+                    cout<<"overtaking, turning left"<<endl;
 
-                        // Use m_vehicleControl data from image processing.
 
-                        // Find end of object.
-                        stageMeasuring = END_OF_OBJECT;
-                    }
-                    else if (stageMoving == TO_RIGHT_LANE_RIGHT_TURN) {
-                        // Move to the right lane: Turn right part.
-                        //m_vehicleControl.setSpeed(1.5);
-                        //m_vehicleControl.setSteeringWheelAngle(25);
+                    // State machine measuring: Both IRs need to see something before leaving this moving state.
+                    stageMeasuring = HAVE_BOTH_IR;
+                    cout<<"HAVE_BOTH_IR "<<endl;
 
-                        stageToRightLaneRightTurn--;
-                        if (stageToRightLaneRightTurn == 0) {
-                            stageMoving = TO_RIGHT_LANE_LEFT_TURN;
-                        }
-                    }
-                    else if (stageMoving == TO_RIGHT_LANE_LEFT_TURN) {
-                        // Move to the left lane: Turn left part.
-                        //m_vehicleControl.setSpeed(.9);
-                        //m_vehicleControl.setSteeringWheelAngle(-25);
 
-                        stageToRightLaneLeftTurn--;
-                        if (stageToRightLaneLeftTurn == 0) {
-                            // Start over.
-                            stageMoving = FORWARD;
-                            stageMeasuring = FIND_OBJECT_INIT;
+                    //stageToRightLaneRightTurn = false;
+                    toLeftLaneRightTurn = true;
 
-                            distanceToObstacle = 0;
-                            distanceToObstacleOld = 0;
+                }
+                else if (stageMoving == TO_LEFT_LANE_RIGHT_TURN && toLeftLaneRightTurn) {
+                    // Move to the left lane: Turn right part until both IRs have the same distance to obstacle.
+                endOvertaking = sbd.getValueForKey_MapOfDistances(ODOMETER);
+                                                        cout<<"endOvertaking " << endOvertaking <<endl;
 
-                            // Reset PID controller.
-                            m_eSum = 0;
-                            m_eOld = 0;
-                        }
-                    }
 
-                    // Measuring state machine.
-                    if (stageMeasuring == FIND_OBJECT_INIT) {
-                        distanceToObstacleOld = sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER);
-                        stageMeasuring = FIND_OBJECT;
-                    }
-                    else if (stageMeasuring == FIND_OBJECT) {
-                        distanceToObstacle = sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER);
+                    m_vehicleControl.setSpeed(1);
+                    m_vehicleControl.setSteeringWheelAngle(1); //0.5
+                    cout<<"ANGLE "<< m_vehicleControl.getSteeringWheelAngle() << endl;
 
-                        // Approaching an obstacle (stationary or driving slower than us).
-                        if (  (distanceToObstacle > 0) && (((distanceToObstacleOld - distanceToObstacle) > 0) || (fabs(distanceToObstacleOld - distanceToObstacle) < 1e-2)) ) {
-                            // Check if overtaking shall be started.
-                            stageMeasuring = FIND_OBJECT_PLAUSIBLE;
-                        }
+                    cout<<"car is turning right on the left lane"<<endl;
 
-                        distanceToObstacleOld = distanceToObstacle;
-                    }
-                    else if (stageMeasuring == FIND_OBJECT_PLAUSIBLE) {
-                        if (sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) < OVERTAKING_DISTANCE) {
-                            stageMoving = TO_LEFT_LANE_LEFT_TURN;
 
-                            // Disable measuring until requested from moving state machine again.
-                            stageMeasuring = DISABLE;
-                        }
-                        else {
-                            stageMeasuring = FIND_OBJECT;
-                        }
-                    }
-                    else if (stageMeasuring == HAVE_BOTH_IR) {
-                        // Remain in this stage until both IRs see something.
-                        if ( (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0) && (sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) > 0) ) {
-                            // Turn to right.
-                            stageMoving = TO_LEFT_LANE_RIGHT_TURN;
-                        }
-                    }
-                    else if (stageMeasuring == HAVE_BOTH_IR_SAME_DISTANCE) {
-                        // Remain in this stage until both IRs have the similar distance to obstacle (i.e. turn car)
-                        // and the driven parts of the turn are plausible.
-                        const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
-                        const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
+                    // State machine measuring: Both IRs need to have the same distance before leaving this moving state.
+                    stageMeasuring = HAVE_BOTH_IR_SAME_DISTANCE;
 
-                        if ((fabs(IR_FR - IR_RR) < HEADING_PARALLEL) && ((stageToRightLaneLeftTurn - stageToRightLaneRightTurn) > 0)) {
-                            // Straight forward again.
-                            stageMoving = CONTINUE_ON_LEFT_LANE;
+                    //stageToRightLaneLeftTurn = false;
+                    //toLeftLaneRightTurn = false;
 
-                            // Reset PID controller.
-                            m_eSum = 0;
-                            m_eOld = 0;
-                        }
-                    }
-                    else if (stageMeasuring == END_OF_OBJECT) {
-                        // Find end of object.
-                        distanceToObstacle = sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT);
+                 }
+                else if (stageMoving == CONTINUE_ON_LEFT_LANE) {
+                    // Move to the left lane: Passing stage.
 
-                        if (distanceToObstacle < 0) {
-                            // Move to right lane again.
-                            stageMoving = TO_RIGHT_LANE_RIGHT_TURN;
+                    m_vehicleControl.setSpeed(2);
+                    m_vehicleControl.setSteeringWheelAngle(0);
+                    cout<<"keep moving on the left lane straight forward"<<endl;
 
-                            // Disable measuring until requested from moving state machine again.
-                            stageMeasuring = DISABLE;
-                        }
+
+                     const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
+                    const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
+                    int32_t temp1 = 0;
+                     temp1  = fabs(IR_FR - IR_RR);
+
+                     cout<<"IR_FR - IR_RR:  " << temp1 << endl;
+
+
+
+                    // Find end of object.
+                    stageMeasuring = END_OF_OBJECT;
+                    //stageToRightLaneRightTurn = true;
+                odoResult = sbd.getValueForKey_MapOfDistances(ODOMETER);
+                                                                        cout<<"odoResult " << odoResult <<endl;
+
+
+
+
+                }
+                else if (stageMoving == TO_RIGHT_LANE_RIGHT_TURN) {
+                    // Move to the right lane: Turn right part.
+
+
+
+
+                    m_vehicleControl.setSpeed(1.5);
+                    m_vehicleControl.setSteeringWheelAngle(1); //15
+                     cout<<"turn back to the right lane"<<endl;
+
+                  
+                    if (sbd.getValueForKey_MapOfDistances(ODOMETER)-odoResult >= midOvertaking - startOvertaking) {
+                        stageMoving = TO_RIGHT_LANE_LEFT_TURN;
+                        cout<<"TO_RIGHT_LANE_LEFT_TURN"<<endl;
+                        odoResult = sbd.getValueForKey_MapOfDistances(ODOMETER);
+                       // stageToRightLaneLeftTurn = true;
+
+
                     }
                 }
+                else if (stageMoving == TO_RIGHT_LANE_LEFT_TURN) {
+                    // Move to the right lane: Turn left part.
+                    m_vehicleControl.setSpeed(1.5);
+                    m_vehicleControl.setSteeringWheelAngle(-1);
+                    cout<<" TO_RIGHT_LANE_LEFT_TURN"<<endl;
+                    
+
+
+                    if (sbd.getValueForKey_MapOfDistances(ODOMETER)-odoResult >= endOvertaking - midOvertaking) {
+                        // Start over.
+                        isOvertaking = false;
+                        stageMoving = FORWARD;
+                        stageMeasuring = FIND_OBJECT_INIT;
+                     cout<<" FORWARD Again"<<endl;
+
+
+                        //stageToRightLaneRightTurn = false;
+                      // stageToRightLaneLeftTurn = false;
+
+                        distanceToObstacle = 0;
+                        distanceToObstacleOld = 0;
+
+                        m_eSum = 0;
+                        m_eOld = 0;
+                    }
+                }
+
+
+
+// Measuring state machine.
+                if (stageMeasuring == FIND_OBJECT_INIT) {
+                    distanceToObstacleOld = sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER);
+                    stageMeasuring = FIND_OBJECT;
+                }
+                else if (stageMeasuring == FIND_OBJECT) {
+                    distanceToObstacle = sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER);
+
+                    // Approaching an obstacle (stationary or driving slower than us).
+                    if ( (distanceToObstacle > 0) && (((distanceToObstacleOld - distanceToObstacle) > 0) || (fabs(distanceToObstacleOld - distanceToObstacle) < 1e-2)) ) {
+                        // Check if overtaking shall be started.
+                        stageMeasuring = FIND_OBJECT_PLAUSIBLE;
+                    }
+
+                    distanceToObstacleOld = distanceToObstacle;
+                }
+                else if (stageMeasuring == FIND_OBJECT_PLAUSIBLE) {
+                    if (sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) < OVERTAKING_DISTANCE && sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) > 20) {
+                        stageMoving = TO_LEFT_LANE_LEFT_TURN;
+                        isOvertaking = true;
+
+                        // Disable measuring until requested from moving state machine again.
+                        stageMeasuring = DISABLE;
+                    }
+                    else {
+                        stageMeasuring = FIND_OBJECT;
+                    }
+                }
+                else if (stageMeasuring == HAVE_BOTH_IR) {
+                    // Remain in this stage until both IRs see something.
+                    if ( (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0) && (sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) > 0) && toLeftLaneRightTurn ) { // bool turns
+                        // Turn to right.
+                        //counter--;
+                        //if (counter == 0)
+                        //{
+                        stageMoving = TO_LEFT_LANE_RIGHT_TURN;
+
+                        //}
+                    }
+                }
+                else if (stageMeasuring == HAVE_BOTH_IR_SAME_DISTANCE) {
+                    // Remain in this stage until both IRs have the similar distance to obstacle (i.e. turn car)
+                    // and the driven parts of the turn are plausible.
+                    const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
+                    const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
+
+                    if ((fabs(IR_FR - IR_RR) < HEADING_PARALLEL) && IR_FR > 0 && (sbd.getValueForKey_MapOfDistances(ODOMETER)>midOvertaking+8)) {
+                        // Straight forward again.
+
+                    // cout<<"stageToRightLaneLeftTurn:  " << stageToRightLaneLeftTurn<< endl;
+                    // cout<<"stageToRightLaneRightTurn:  " << stageToRightLaneRightTurn<< endl;
+
+                   
+
+
+                        stageMoving = CONTINUE_ON_LEFT_LANE;
+                        m_eSum = 0;
+                        m_eOld = 0;
+
+
+                    }
+                }
+                else if (stageMeasuring == END_OF_OBJECT) {
+                    // Find end of object.
+                    //const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
+
+                   // distanceToObstacle = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
+
+                    const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
+                    const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
+
+                    if ( IR_FR < 1 && IR_RR < 1) {
+                        // Move to right lane again.
+                        stageMoving = TO_RIGHT_LANE_RIGHT_TURN;
+
+                        // Disable measuring until requested from moving state machine again.
+                        stageMeasuring = DISABLE;
+                    }
+                }
+
+                // Create container for finally sending the data.
+                cout << "US front center: " << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) << endl;
+               cout << "US front Right: " << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) << endl;
+               cout << "IR front RIGHT: " << sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) << endl;
+               cout << "IR rear Right: " << sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) << endl;
+                cout << "Speed: " << m_vehicleControl.getSpeed() << endl;
+                cout << "Angle: " << m_vehicleControl.getSteeringWheelAngle() << endl;
 
                 // Create container for finally sending the set values for the control algorithm.
                 Container c2(m_vehicleControl);
                 // Send container.
                 getConference().send(c2);
             }
+        }
 
             return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
         }

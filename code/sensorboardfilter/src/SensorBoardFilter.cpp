@@ -1,20 +1,6 @@
 /**
- * Example - Example code.
- * Copyright (C) 2016 Christian Berger
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Module to filter and thereby clean up the sensor data.
+ * Created by Axel Slättman
  */
 
 #include <stdint.h>
@@ -67,11 +53,11 @@ void SensorBoardFilter::nextContainer(odcore::data::Container &c) {
 
             usFrontcenter = rsbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER);
             if(usFrontcenter > 59){
-              usFrontcenter = 0;
+              usFrontcenter = -1;
             }
             usFrontright = rsbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT);
             if(usFrontright > 59){
-              usFrontright = 0;
+              usFrontright = -1;
             }
 
             irFrontright = rsbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);

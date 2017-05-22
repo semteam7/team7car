@@ -55,9 +55,9 @@ namespace automotive {
 
         // This method will do the main data processing job.
         odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Overtaker::body() {
+           
             const int32_t ULTRASONIC_FRONT_CENTER = 3;
-
-            const int32_t ULTRASONIC_FRONT_RIGHT = 4;
+            //const int32_t ULTRASONIC_FRONT_RIGHT = 4;
             const int32_t INFRARED_FRONT_RIGHT = 0;
             const int32_t INFRARED_REAR_RIGHT = 2;
             const int32_t ODOMETER = 6;
@@ -76,19 +76,6 @@ namespace automotive {
             int midOvertaking = 0;
             int endOvertaking = 0;
             int odoResult = 0;
-
-
-              // int32_t counter = 5;
-
-           // int32_t counterToRightOnLeftLane = 20;
-            // State counter for dynamically moving back to right lane.
-            // int32_t stageToRightLaneRightTurn = 0;
-            // int32_t stageToRightLaneLeftTurn = 20; //15
-
-            //  bool stageToRightLaneRightTurn = false;
-            // bool stageToRightLaneLeftTurn = false; //15
-
-            bool toLeftLaneRightTurn = false;
 
             // Distance variables to ensure we are overtaking only stationary or slowly driving obstacles.
             double distanceToObstacle = 0;
@@ -112,117 +99,64 @@ namespace automotive {
                     // Go forward.
                     vc.setSpeed(2);
                     vc.setSteeringWheelAngle(0);
-                    cout<<"moves forward"<<endl;
                     startOvertaking = sbd.getValueForKey_MapOfDistances(ODOMETER);
-                    cout<<"startOvertaking" << startOvertaking <<endl;
-
-
 
                 }
 
                 else if (stageMoving == TO_LEFT_LANE_LEFT_TURN) {
                     // Move to the left lane: Turn left part until both IRs see something.
                     midOvertaking = sbd.getValueForKey_MapOfDistances(ODOMETER);
-                                        cout<<"midOvertaking " << midOvertaking <<endl;
-
 
                     vc.setSpeed(1);
                     vc.setSteeringWheelAngle(-1);
-                    cout<<"overtaking, turning left"<<endl;
-
 
                     // State machine measuring: Both IRs need to see something before leaving this moving state.
                     stageMeasuring = HAVE_BOTH_IR;
-                    cout<<"HAVE_BOTH_IR "<<endl;
-
-
-                    //stageToRightLaneRightTurn = false;
-                    toLeftLaneRightTurn = true;
 
                 }
-                else if (stageMoving == TO_LEFT_LANE_RIGHT_TURN && toLeftLaneRightTurn) {
+                else if (stageMoving == TO_LEFT_LANE_RIGHT_TURN) {
                     // Move to the left lane: Turn right part until both IRs have the same distance to obstacle.
                 endOvertaking = sbd.getValueForKey_MapOfDistances(ODOMETER);
-                                                        cout<<"endOvertaking " << endOvertaking <<endl;
-
 
                     vc.setSpeed(1);
                     vc.setSteeringWheelAngle(1); //0.5
-                    cout<<"ANGLE "<< vc.getSteeringWheelAngle() << endl;
-
-                    cout<<"car is turning right on the left lane"<<endl;
-
 
                     // State machine measuring: Both IRs need to have the same distance before leaving this moving state.
                     stageMeasuring = HAVE_BOTH_IR_SAME_DISTANCE;
 
-                    //stageToRightLaneLeftTurn = false;
-                    //toLeftLaneRightTurn = false;
-
                  }
                 else if (stageMoving == CONTINUE_ON_LEFT_LANE) {
                     // Move to the left lane: Passing stage.
-
                     vc.setSpeed(2);
                     vc.setSteeringWheelAngle(0);
-                    cout<<"keep moving on the left lane straight forward"<<endl;
-
-
-                     const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
-                    const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
-                    int32_t temp1 = 0;
-                     temp1  = fabs(IR_FR - IR_RR);
-
-                     cout<<"IR_FR - IR_RR:  " << temp1 << endl;
-
-
 
                     // Find end of object.
                     stageMeasuring = END_OF_OBJECT;
                     //stageToRightLaneRightTurn = true;
                 odoResult = sbd.getValueForKey_MapOfDistances(ODOMETER);
-                                                                        cout<<"odoResult " << odoResult <<endl;
-
-
-
-
                 }
+
                 else if (stageMoving == TO_RIGHT_LANE_RIGHT_TURN) {
                     // Move to the right lane: Turn right part.
-
-
-
-
                     vc.setSpeed(1.5);
                     vc.setSteeringWheelAngle(1); //15
-                     cout<<"turn back to the right lane"<<endl;
 
                   
                     if (sbd.getValueForKey_MapOfDistances(ODOMETER)-odoResult >= midOvertaking - startOvertaking) {
                         stageMoving = TO_RIGHT_LANE_LEFT_TURN;
-                        cout<<"TO_RIGHT_LANE_LEFT_TURN"<<endl;
                         odoResult = sbd.getValueForKey_MapOfDistances(ODOMETER);
-                       // stageToRightLaneLeftTurn = true;
-
-
                     }
                 }
+
                 else if (stageMoving == TO_RIGHT_LANE_LEFT_TURN) {
                     // Move to the left lane: Turn left part.
                     vc.setSpeed(1.5);
                     vc.setSteeringWheelAngle(-1);
-                    cout<<" TO_RIGHT_LANE_LEFT_TURN"<<endl;
-
 
                     if (sbd.getValueForKey_MapOfDistances(ODOMETER)-odoResult >= endOvertaking - midOvertaking) {
                         // Start over.
                         stageMoving = FORWARD;
                         stageMeasuring = FIND_OBJECT_INIT;
-                     cout<<" FORWARD Again"<<endl;
-
-
-                        //stageToRightLaneRightTurn = false;
-                      // stageToRightLaneLeftTurn = false;
 
                         distanceToObstacle = 0;
                         distanceToObstacleOld = 0;
@@ -258,14 +192,9 @@ namespace automotive {
                 }
                 else if (stageMeasuring == HAVE_BOTH_IR) {
                     // Remain in this stage until both IRs see something.
-                    if ( (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0) && (sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) > 0) && toLeftLaneRightTurn ) { // bool turns
-                        // Turn to right.
-                        //counter--;
-                        //if (counter == 0)
-                        //{
+                    if ( (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0) && (sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) > 0)) {
+       
                         stageMoving = TO_LEFT_LANE_RIGHT_TURN;
-
-                        //}
                     }
                 }
                 else if (stageMeasuring == HAVE_BOTH_IR_SAME_DISTANCE) {
@@ -274,24 +203,14 @@ namespace automotive {
                     const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
                     const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
 
-                    if ((fabs(IR_FR - IR_RR) < HEADING_PARALLEL) && IR_FR > 0 && (sbd.getValueForKey_MapOfDistances(ODOMETER)>midOvertaking+8)) {
-                        // Straight forward again.
-
-                    // cout<<"stageToRightLaneLeftTurn:  " << stageToRightLaneLeftTurn<< endl;
-                    // cout<<"stageToRightLaneRightTurn:  " << stageToRightLaneRightTurn<< endl;
-
-                   
-
-
+                    if ((fabs(IR_FR - IR_RR) < HEADING_PARALLEL) && IR_FR > 0 && (sbd.getValueForKey_MapOfDistances(ODOMETER)>midOvertaking + 8)) {
+                     
                         stageMoving = CONTINUE_ON_LEFT_LANE;
                     }
                 }
                 else if (stageMeasuring == END_OF_OBJECT) {
                     // Find end of object.
-                    //const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
-
-                   // distanceToObstacle = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
-
+                  
                     const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
                     const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
 
@@ -305,14 +224,6 @@ namespace automotive {
                 }
 
                 // Create container for finally sending the data.
-                cout << "US front center: " << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) << endl;
-               cout << "US front Right: " << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) << endl;
-               cout << "IR front RIGHT: " << sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) << endl;
-               cout << "IR rear Right: " << sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) << endl;
-                cout << "Speed: " << vc.getSpeed() << endl;
-                cout << "Angle: " << vc.getSteeringWheelAngle() << endl;
-
-
                 Container c(vc);
                 // Send container.
                 getConference().send(c);

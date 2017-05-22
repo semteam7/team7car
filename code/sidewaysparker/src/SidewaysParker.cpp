@@ -62,7 +62,7 @@ namespace automotive {
             int hardMoving = 0;
             int sensor_counter = 0;
             //int sensor_time = 3;
-            int anomaly = 0;
+           // int anomaly = 0;
             // char stageMeasuring = 0;
             int gap_size = 0;
             while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
@@ -79,9 +79,9 @@ namespace automotive {
                 //cout << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) << " ultrasonic front right" << endl;
                 //cout << vd.getAbsTraveledPath() << " THE DAMN TRAVELLED PATH" << endl;
                 cout << sbd.getValueForKey_MapOfDistances(ODOMETER) << " ODOMETER" << endl;
-                cout << gap_size << " gap size" << endl;
+                cout << gap_size << " gap outer" << endl;
                 cout << gap_measure << "gap measure " << endl;
-                //cout << sensor_counter << " sensor counter " << endl;
+                cout << sensor_counter << " sensor counter " << endl;
 
 
 
@@ -94,18 +94,18 @@ namespace automotive {
                         //  absPathEnd = vd.getAbsTraveledPath();
                         vc.setSpeed(2);
                         vc.setSteeringWheelAngle(0);
-                        gap_size = sbd.getValueForKey_MapOfDistances(ODOMETER) - gap_measure;
-                        cout << gap_size - gap_measure << " gap size" << endl;
+                        gap_size = sbd.getValueForKey_MapOfDistances(ODOMETER);
+                        //cout << gap_size - gap_measure << " gap inner" << endl;
 
                         //cout << "path end " << absPathEnd << endl;
                         //cout << "path start " << absPathStart << endl;
                         //cout << "gap_size  " << gap_size << endl;
-                        //cout << "gap size 1 " << gap_size << endl;
+                        //cout << "gap size 1 a" << gap_size << endl;
                         //cout << "sensor counter " << sensor_counter << endl;
                         //cout << "sensor time " << sensor_time << endl;
 
 
-                        if (((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 5)
+                        if (((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 0)
                              ||(sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 20))
                                 && (sensor_counter == 0)){
 
@@ -138,29 +138,31 @@ namespace automotive {
                             */
 
 
-                        if (((gap_size - gap_measure) == 140)
+                        if ((gap_size - gap_measure >= 35) && (gap_size - gap_measure <= 45)
                             && (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0)) {
                             cout << "gap 7 " << endl;
                             cout << "gap measure " << gap_measure << endl;
-                            stageMoving = 2;
+                            stageMoving = 0;
+                            hardMoving = 1;
                          //   hardMoving = 1;
-                        } else if ((gap_size -  gap_measure) == 180) {
+                        } else if ((gap_size - gap_measure >= 50) && (gap_size - gap_measure <= 80)) {
                             cout << "gap 10" << endl;
                             cout << "gap measure " << gap_measure << endl;
                             stageMoving = 0;
                             hardMoving = 1;
                         }
+                            /*
                         else if ((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 20)
                                  &&(sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 5)
                                  && anomaly < 1){
                             anomaly++;
                         }
+                             */
                         else if ((sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) < 20)
-                                 &&(sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 5)
-                                 && anomaly == 1){
+                                 &&(sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 5)){
                             gap_measure = 0;
                             sensor_counter = 0;
-                            anomaly = 0;
+                           // anomaly = 0;
                         }
                         //End of gap finding code
                     }
@@ -239,21 +241,22 @@ namespace automotive {
                             vc.setSteeringWheelAngle(0);
                             hardMoving++;
                         }
-                        if ((hardMoving >= 10) && (hardMoving < 45)) {
+                        if ((hardMoving >= 10) && (hardMoving < 55)) {
                             cout << "hardmoving 3" << endl;
                             // Backwards, steering wheel to the right.
                             vc.setSpeed(-1.6);
                             vc.setSteeringWheelAngle(25);
                             hardMoving++;
                         }
-                        if ((hardMoving >= 45) && (hardMoving < 80)) {
+                        if ((hardMoving >= 55) && (hardMoving < 85)) {
                             cout << hardMoving <<"hardmoving 4" << endl;
                             // Backwards, steering wheel to the left.
                             vc.setSpeed(-.175);
                             vc.setSteeringWheelAngle(-25);
                             hardMoving++;
                         }
-                        if((hardMoving >= 80) && (hardMoving < 90)){
+
+                        if((hardMoving >= 85) && (hardMoving < 110)){
                             cout << "hardmoving 5" << endl;
                             hardMoving++;
                             // Stop.
@@ -261,7 +264,7 @@ namespace automotive {
                             vc.setSteeringWheelAngle(25);
                         }
 
-                        else if (hardMoving == 90){
+                        else if (hardMoving == 110){
                             vc.setSpeed(0);
                             vc.setSteeringWheelAngle(0);
                         }

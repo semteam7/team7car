@@ -1,4 +1,3 @@
-
 /**
  * sidewaysparker - Sample application for realizing a sideways parking car.
  * Copyright (C) 2012 - 2015 Christian Berger
@@ -138,14 +137,16 @@ namespace automotive {
                             */
 
 
-                        if ((gap_size - gap_measure >= 35) && (gap_size - gap_measure <= 45)
+
+                        if (((gap_size - gap_measure) >= 140 && (gap_size - gap_measure) < 180)
                             && (sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) > 0)) {
                             cout << "gap 7 " << endl;
                             cout << "gap measure " << gap_measure << endl;
                             stageMoving = 0;
                             hardMoving = 1;
                          //   hardMoving = 1;
-                        } else if ((gap_size - gap_measure >= 50) && (gap_size - gap_measure <= 80)) {
+
+                        } else if ((gap_size -  gap_measure) >= 180) {
                             cout << "gap 10" << endl;
                             cout << "gap measure " << gap_measure << endl;
                             stageMoving = 0;
@@ -340,3 +341,6 @@ namespace automotive {
         }
     }
 } // automotive::miniature
+
+
+

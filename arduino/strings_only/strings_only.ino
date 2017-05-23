@@ -225,7 +225,6 @@ void sendSensorData(){
   sensorData += readUSSensor(US_1);
   sensorData += readUSSensor(US_2);
   if(ODOMETRY){ sensorData += (char)(odocount + 33);}
-  
   Serial.println(sensorData);
 }
 

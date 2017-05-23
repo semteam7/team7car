@@ -63,7 +63,7 @@ namespace automotive {
             const int32_t ODOMETER = 6;
 
             const double OVERTAKING_DISTANCE = 45;  
-            const double HEADING_PARALLEL = 1; //0.04
+            const double HEADING_PARALLEL = 3; //0.04
 
             // Overall state machines for moving and measuring.
             enum StateMachineMoving { FORWARD, TO_LEFT_LANE_LEFT_TURN, TO_LEFT_LANE_RIGHT_TURN, CONTINUE_ON_LEFT_LANE, TO_RIGHT_LANE_RIGHT_TURN, TO_RIGHT_LANE_LEFT_TURN };
@@ -96,6 +96,7 @@ namespace automotive {
 
                 // Moving state machine.
                 if (stageMoving == FORWARD) {
+
                     // Go forward.
                     vc.setSpeed(2);
                     vc.setSteeringWheelAngle(0);
@@ -139,7 +140,7 @@ namespace automotive {
                 else if (stageMoving == TO_RIGHT_LANE_RIGHT_TURN) {
                     // Move to the right lane: Turn right part.
                     vc.setSpeed(1.5);
-                    vc.setSteeringWheelAngle(1); //15
+                    vc.setSteeringWheelAngle(0.5); //15
 
                   
                     if (sbd.getValueForKey_MapOfDistances(ODOMETER)-odoResult >= midOvertaking - startOvertaking) {
@@ -203,7 +204,7 @@ namespace automotive {
                     const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
                     const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
 
-                    if ((fabs(IR_FR - IR_RR) < HEADING_PARALLEL) && IR_FR > 0 && (sbd.getValueForKey_MapOfDistances(ODOMETER)>midOvertaking + 8)) {
+                    if ((fabs(IR_FR - IR_RR) < HEADING_PARALLEL) && IR_FR > 0 && (sbd.getValueForKey_MapOfDistances(ODOMETER)>midOvertaking + 6)) {
                      
                         stageMoving = CONTINUE_ON_LEFT_LANE;
                     }
@@ -212,9 +213,9 @@ namespace automotive {
                     // Find end of object.
                   
                     const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
-                    const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
+                    //const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
 
-                    if ( IR_FR < 1 && IR_RR < 1) {
+                    if ( IR_FR < 1) {
                         // Move to right lane again.
                         stageMoving = TO_RIGHT_LANE_RIGHT_TURN;
 

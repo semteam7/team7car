@@ -632,13 +632,13 @@ namespace automotive {
 
             // Parameters for overtaking.
                 const int32_t ULTRASONIC_FRONT_CENTER = 3;
-                const int32_t ULTRASONIC_FRONT_RIGHT = 4;
+                //const int32_t ULTRASONIC_FRONT_RIGHT = 4;
                 const int32_t INFRARED_FRONT_RIGHT = 0;
                 const int32_t INFRARED_REAR_RIGHT = 2;
                 const int32_t ODOMETER = 6;
 
                 const double OVERTAKING_DISTANCE = 45;  
-                const double HEADING_PARALLEL = 1; //0.04
+                const double HEADING_PARALLEL = 4; //0.04
 
             // Overall state machines for moving and measuring.
                 enum StateMachineMoving { FORWARD, TO_LEFT_LANE_LEFT_TURN, TO_LEFT_LANE_RIGHT_TURN, CONTINUE_ON_LEFT_LANE, TO_RIGHT_LANE_RIGHT_TURN, TO_RIGHT_LANE_LEFT_TURN };
@@ -862,7 +862,7 @@ namespace automotive {
                     const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
                     const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
 
-                    if ((fabs(IR_FR - IR_RR) < HEADING_PARALLEL) && IR_FR > 0 && (sbd.getValueForKey_MapOfDistances(ODOMETER)>midOvertaking+8)) {
+                    if ((fabs(IR_FR - IR_RR) < HEADING_PARALLEL) && IR_FR > 0 && (sbd.getValueForKey_MapOfDistances(ODOMETER)>midOvertaking + 6)) {
                         // Straight forward again.
 
                     // cout<<"stageToRightLaneLeftTurn:  " << stageToRightLaneLeftTurn<< endl;
@@ -885,9 +885,9 @@ namespace automotive {
                    // distanceToObstacle = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
 
                     const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
-                    const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
+                    //const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
 
-                    if ( IR_FR < 1 && IR_RR < 1) {
+                    if ( IR_FR < 1) {
                         // Move to right lane again.
                         stageMoving = TO_RIGHT_LANE_RIGHT_TURN;
 
@@ -898,7 +898,7 @@ namespace automotive {
 
                 // Create container for finally sending the data.
                 cout << "US front center: " << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_CENTER) << endl;
-               cout << "US front Right: " << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) << endl;
+              // cout << "US front Right: " << sbd.getValueForKey_MapOfDistances(ULTRASONIC_FRONT_RIGHT) << endl;
                cout << "IR front RIGHT: " << sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT) << endl;
                cout << "IR rear Right: " << sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT) << endl;
                 cout << "Speed: " << m_vehicleControl.getSpeed() << endl;

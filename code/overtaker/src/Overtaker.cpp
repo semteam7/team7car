@@ -56,6 +56,7 @@ namespace automotive {
         // This method will do the main data processing job.
         odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Overtaker::body() {
            
+            // Sensor IDs
             const int32_t ULTRASONIC_FRONT_CENTER = 3;
             //const int32_t ULTRASONIC_FRONT_RIGHT = 4;
             const int32_t INFRARED_FRONT_RIGHT = 0;
@@ -213,9 +214,9 @@ namespace automotive {
                     // Find end of object.
                   
                     const double IR_FR = sbd.getValueForKey_MapOfDistances(INFRARED_FRONT_RIGHT);
-                    //const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
+                    const double IR_RR = sbd.getValueForKey_MapOfDistances(INFRARED_REAR_RIGHT);
 
-                    if ( IR_FR < 1) {
+                    if ( IR_FR < 1 && IR_RR < 0) {
                         // Move to right lane again.
                         stageMoving = TO_RIGHT_LANE_RIGHT_TURN;
 

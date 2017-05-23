@@ -338,7 +338,7 @@ namespace automotive {
                     leftX = abs (rightPoint2 - leftPoint2);
 
 
-                    /*
+
                     if (rightPoint1 > 0 || rightPoint2 > 0){
                         if (!useRightLaneMarking){
                             m_eSum = 0;
@@ -346,20 +346,18 @@ namespace automotive {
                         }
 
                         // CHECK RANGES TO CALCULATE E
-                        //if (abs (rightPoint1 - rightPoint2) < 30){
+                        if (abs (rightPoint1 - rightPoint2) < 50){
 
                         int updatedPoint = (rightPoint1 + rightPoint2) / 2;
                         e = (updatedPoint - distance) / distance;
                         
-                       // } else if (rightPoint1 > 70) {
-                        //    e = (rightPoint1 - distance) / distance;
+                        } else if (rightPoint1 > 150) {
+                            e = (rightPoint1 - distance) / distance;
 
-                       // } else {
-                          //  e = (rightPoint2 - distance) / distance;
+                        } else {
+                            e = (rightPoint2 - distance) / distance;
 
-                        //}
-
-
+                        }
 
                         useRightLaneMarking = true;
                     }
@@ -369,19 +367,18 @@ namespace automotive {
                             m_eSum = 0;
                             m_eOld = 0;
                         }
-
                         // CHECK RANGES TO CALCULATE E
 
-                        //if (abs (leftPoint1 - leftPoint2) < 30) {
+                        if (abs (leftPoint1 - leftPoint2) < 50) {
 
                         int updatedPoint = (leftPoint1 + leftPoint2) / 2;
-                        e = (distance - updatedPoint) / distance
+                        e = (distance - updatedPoint) / distance;
 
-                        //} else if (leftPoint1 > 70) {
-                         //   e = (leftPoint1 - distance) / distance; 
-                        //} else {
-                        //    e = (leftPoint2 - distance) / distance; 
-                       // }
+                        } else if (leftPoint1 > 150) {
+                            e = (leftPoint1 - distance) / distance;
+                        } else {
+                            e = (leftPoint2 - distance) / distance;
+                        }
 
                         useRightLaneMarking = false;
                     }
@@ -394,36 +391,47 @@ namespace automotive {
 
                     
 
-                    */
-                    
-                    // Calculate the deviation error.
-                    if (right.x > 0) {
-                        if (!useRightLaneMarking) {
-                            m_eSum = 0;
-                            m_eOld = 0;
-                        }
 
 
-                        e = ((right.x - cannyImage->width/2.0) - distance)/distance;
 
-                        useRightLaneMarking = true;
-                    }
-                    else if (left.x > 0) {
-                        if (useRightLaneMarking) {
-                            m_eSum = 0;
-                            m_eOld = 0;
-                        }
-                        
-                        e = (distance - (cannyImage->width/2.0 - left.x))/distance;
+                    // þ.,.þ.,þ.,þ.,þ.,þ.,þ.,þ.,þ.
 
-                        useRightLaneMarking = false;
-                    }
-                    else {
-                        // If no measurements are available, reset PID controller.
-                        m_eSum = 0;
-                        m_eOld = 0;
-                    }
-                    
+
+
+
+
+
+
+
+//
+//                    // Calculate the deviation error.
+//                    if (right.x > 0) {
+//                        if (!useRightLaneMarking) {
+//                            m_eSum = 0;
+//                            m_eOld = 0;
+//                        }
+//
+//
+//                        e = ((right.x - cannyImage->width/2.0) - distance)/distance;
+//
+//                        useRightLaneMarking = true;
+//                    }
+//                    else if (left.x > 0) {
+//                        if (useRightLaneMarking) {
+//                            m_eSum = 0;
+//                            m_eOld = 0;
+//                        }
+//
+//                        e = (distance - (cannyImage->width/2.0 - left.x))/distance;
+//
+//                        useRightLaneMarking = false;
+//                    }
+//                    else {
+//                        // If no measurements are available, reset PID controller.
+//                        m_eSum = 0;
+//                        m_eOld = 0;
+//                    }
+//
                     
                 }
             }

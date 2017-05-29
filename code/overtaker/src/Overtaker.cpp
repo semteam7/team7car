@@ -94,7 +94,7 @@ namespace automotive {
 
                 // Create vehicle control data.
                 VehicleControl vc;
-
+                    /* Moving forward state */
                 // Moving state machine.
                 if (stageMoving == FORWARD) {
 
@@ -104,7 +104,10 @@ namespace automotive {
                     startOvertaking = sbd.getValueForKey_MapOfDistances(ODOMETER);
 
                 }
+                    /* End moving forward */
 
+
+                    /* Ovetaking an object state */
                 else if (stageMoving == TO_LEFT_LANE_LEFT_TURN) {
                     // Move to the left lane: Turn left part until both IRs see something.
                     midOvertaking = sbd.getValueForKey_MapOfDistances(ODOMETER);
@@ -116,6 +119,9 @@ namespace automotive {
                     stageMeasuring = HAVE_BOTH_IR;
 
                 }
+                    /* End overtaking an object */
+
+                    /* Right turn on the left lane state */
                 else if (stageMoving == TO_LEFT_LANE_RIGHT_TURN) {
                     // Move to the left lane: Turn right part until both IRs have the same distance to obstacle.
                 endOvertaking = sbd.getValueForKey_MapOfDistances(ODOMETER);
@@ -127,6 +133,9 @@ namespace automotive {
                     stageMeasuring = HAVE_BOTH_IR_SAME_DISTANCE;
 
                  }
+                    /* End of left lane right turn */
+
+                    /* Move forward on the left lane state */
                 else if (stageMoving == CONTINUE_ON_LEFT_LANE) {
                     // Move to the left lane: Passing stage.
                     vc.setSpeed(2);
@@ -137,7 +146,9 @@ namespace automotive {
                     //stageToRightLaneRightTurn = true;
                 odoResult = sbd.getValueForKey_MapOfDistances(ODOMETER);
                 }
+                    /* End of moving forward on the left lane */
 
+                    /* Turning right turn to the right lane state */
                 else if (stageMoving == TO_RIGHT_LANE_RIGHT_TURN) {
                     // Move to the right lane: Turn right part.
                     vc.setSpeed(1.5);
@@ -149,12 +160,16 @@ namespace automotive {
                         odoResult = sbd.getValueForKey_MapOfDistances(ODOMETER);
                     }
                 }
+                    /* End of turning right turn to the right lane */
 
+                    /* Turning left on the right lane state */
                 else if (stageMoving == TO_RIGHT_LANE_LEFT_TURN) {
-                    // Move to the left lane: Turn left part.
+
                     vc.setSpeed(1.5);
                     vc.setSteeringWheelAngle(-1);
+                    /* End of turning left on the right lane */
 
+                    /* Car is moving straight now on the right turn and waiting for another obstacle to overtake */
                     if (sbd.getValueForKey_MapOfDistances(ODOMETER)-odoResult >= endOvertaking - midOvertaking) {
                         // Start over.
                         stageMoving = FORWARD;
